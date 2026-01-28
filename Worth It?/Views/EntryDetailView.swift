@@ -432,6 +432,8 @@ struct EntryDetailView: View {
 
             TextEditor(text: $editNote)
                 .font(.system(size: 16))
+                .foregroundStyle(AppColors.foreground)
+                .scrollContentBackground(.hidden)
                 .frame(minHeight: 80)
                 .padding(8)
                 .background(AppColors.card)
