@@ -4,7 +4,6 @@
 //
 
 import SwiftUI
-import UIKit
 
 struct MainTabView: View {
     @Environment(EntryStore.self) private var store
@@ -12,21 +11,17 @@ struct MainTabView: View {
     @State private var showLogSheet = false
 
     var body: some View {
-        ZStack(alignment: .bottom) {
-            // Main content
-            Group {
-                switch selectedTab {
-                case 0: HomeView()
-                case 1: SearchView()
-                case 2: LibraryView()
-                case 3: AccountView()
-                default: HomeView()
-                }
+        Group {
+            switch selectedTab {
+            case 0: HomeView()
+            case 1: SearchView()
+            case 2: LibraryView()
+            case 3: AccountView()
+            default: HomeView()
             }
-            .frame(maxWidth: .infinity, maxHeight: .infinity)
-            .safeAreaPadding(.bottom, 70) // Space for tab bar
-
-            // Tab bar at bottom
+        }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .safeAreaInset(edge: .bottom, spacing: 0) {
             VStack(spacing: 0) {
                 Rectangle()
                     .fill(AppColors.border.opacity(0.5))
@@ -55,16 +50,13 @@ struct MainTabView: View {
                     TabButton(icon: "person", iconFilled: "person.fill", label: "Account", isSelected: selectedTab == 3) { selectedTab = 3 }
                 }
                 .padding(.horizontal, 16)
-                .padding(.top, 8)
-                .padding(.bottom, 4)
+                .padding(.vertical, 6)
             }
-            .frame(maxWidth: .infinity)
-            .background(AppColors.card.opacity(0.8))
-            .padding(.bottom, UIApplication.shared.connectedScenes
-                .compactMap { $0 as? UIWindowScene }
-                .first?.windows.first?.safeAreaInsets.bottom ?? 0)
+            .background(
+                AppColors.card.opacity(0.8)
+                    .ignoresSafeArea(edges: .bottom)
+            )
         }
-        .ignoresSafeArea(edges: .bottom)
         .ignoresSafeArea(.keyboard)
         .sheet(isPresented: $showLogSheet) {
             LogExperienceView(store: store)
@@ -81,18 +73,16 @@ struct TabButton: View {
 
     var body: some View {
         Button(action: action) {
-            VStack(spacing: 4) {
+            VStack(spacing: 2) {
                 Image(systemName: isSelected ? iconFilled : icon)
                     .font(.system(size: 20))
                     .foregroundStyle(isSelected ? AppColors.primary : AppColors.mutedForeground)
-                    .scaleEffect(isSelected ? 1.1 : 1.0)
-                    .animation(.easeInOut(duration: 0.15), value: isSelected)
 
                 Text(label)
                     .font(.system(size: 10, weight: isSelected ? .medium : .regular))
                     .foregroundStyle(isSelected ? AppColors.primary : AppColors.mutedForeground)
             }
-            .padding(.vertical, 8)
+            .padding(.vertical, 4)
             .padding(.horizontal, 12)
         }
         .frame(maxWidth: .infinity)
