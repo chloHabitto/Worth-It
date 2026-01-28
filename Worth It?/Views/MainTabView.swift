@@ -81,9 +81,9 @@ struct MainTabView: View {
             }
             .padding(.horizontal, 16) // px-4
             .padding(.vertical, 8)    // py-2
-            .border(Color.blue, width: 1) // DEBUG
         }
-        .border(Color.green, width: 1) // DEBUG
+        .fixedSize(horizontal: false, vertical: true)
+        .frame(maxWidth: .infinity)
         .background(
             AppColors.card.opacity(0.8)
                 .ignoresSafeArea(edges: .bottom)
@@ -113,7 +113,6 @@ struct TabButton: View {
             }
             .padding(.vertical, 8)
             .padding(.horizontal, 12)
-            .border(Color.red, width: 1) // DEBUG
         }
         .frame(maxWidth: .infinity)
         .buttonStyle(.plain)
