@@ -4,6 +4,7 @@
 //
 
 import Foundation
+import SwiftUI
 
 // MARK: - Enums
 
@@ -15,6 +16,16 @@ enum EntryCategory: String, CaseIterable, Codable {
     case other
 
     var displayName: String { rawValue.capitalized }
+
+    var emoji: String {
+        switch self {
+        case .food: return "🍔"
+        case .sleep: return "😴"
+        case .habit: return "🔄"
+        case .social: return "👥"
+        case .other: return "📝"
+        }
+    }
 }
 
 enum TimeContext: String, CaseIterable, Codable {
@@ -25,8 +36,10 @@ enum TimeContext: String, CaseIterable, Codable {
 
     var displayName: String {
         switch self {
-        case .lateNight: return "Late night"
-        default: return rawValue.capitalized
+        case .morning: return "morning"
+        case .afternoon: return "afternoon"
+        case .evening: return "evening"
+        case .lateNight: return "late-night"
         }
     }
 }
@@ -38,6 +51,15 @@ enum PhysicalRating: String, CaseIterable, Codable {
     case awful
 
     var displayName: String { rawValue.capitalized }
+
+    var emoji: String {
+        switch self {
+        case .fine: return "😌"
+        case .meh: return "😕"
+        case .bad: return "😣"
+        case .awful: return "🤢"
+        }
+    }
 }
 
 enum WorthIt: String, CaseIterable, Codable {
@@ -46,6 +68,30 @@ enum WorthIt: String, CaseIterable, Codable {
     case no
 
     var displayName: String { rawValue.capitalized }
+
+    var emoji: String {
+        switch self {
+        case .yes: return "✓"
+        case .meh: return "~"
+        case .no: return "✗"
+        }
+    }
+
+    var label: String {
+        switch self {
+        case .yes: return "Yes"
+        case .meh: return "Meh"
+        case .no: return "No"
+        }
+    }
+
+    var badgeColor: Color {
+        switch self {
+        case .yes: return Color(hue: 0.40, saturation: 0.50, brightness: 0.45)
+        case .meh: return Color(hue: 0.12, saturation: 0.80, brightness: 0.50)
+        case .no: return Color(hue: 0.0, saturation: 0.70, brightness: 0.50)
+        }
+    }
 }
 
 // MARK: - Entry
@@ -85,5 +131,15 @@ struct Entry: Identifiable, Codable, Equatable, Hashable {
 
     func hash(into hasher: inout Hasher) {
         hasher.combine(id)
+    }
+}
+
+// MARK: - Date
+
+extension Date {
+    func timeAgoDisplay() -> String {
+        let formatter = RelativeDateTimeFormatter()
+        formatter.unitsStyle = .full
+        return formatter.localizedString(for: self, relativeTo: Date())
     }
 }

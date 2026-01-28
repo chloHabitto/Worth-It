@@ -12,10 +12,10 @@ enum WorthItTheme {
     static let coral = Color(hue: 0.03, saturation: 0.76, brightness: 0.61)
 
     /// Background: warm cream
-    static let background = Color(hue: 0.12, saturation: 0.08, brightness: 0.98)
+    static let background = Color(hue: 0.11, saturation: 0.33, brightness: 0.98)
 
     /// Secondary text / muted
-    static let muted = Color(hue: 0.08, saturation: 0.06, brightness: 0.55)
+    static let muted = Color(hue: 0.07, saturation: 0.15, brightness: 0.45)
 
     /// Card/surface
     static let surface = Color.white

@@ -46,8 +46,7 @@ struct HomeView: View {
     private var headerSection: some View {
         VStack(alignment: .leading, spacing: 4) {
             Text("Worth It?")
-                .font(WorthItTheme.titleFont)
-                .fontWeight(.semibold)
+                .font(.system(size: 36, weight: .bold, design: .serif))
                 .foregroundStyle(WorthItTheme.coral)
             Text("Before you do it again… remember.")
                 .font(WorthItTheme.calloutFont)
@@ -63,7 +62,7 @@ struct HomeView: View {
         HStack(spacing: 10) {
             Image(systemName: "magnifyingglass")
                 .foregroundStyle(WorthItTheme.muted)
-            TextField("Search experiences…", text: $searchText)
+            TextField("How did I feel after...", text: $searchText)
                 .font(WorthItTheme.bodyFont)
         }
         .padding(.horizontal, 14)
@@ -84,19 +83,33 @@ struct HomeView: View {
         Button {
             showLogExperience = true
         } label: {
-            HStack(spacing: 8) {
-                Image(systemName: "plus.circle.fill")
-                Text("Log experience")
-                    .font(WorthItTheme.headlineFont)
+            HStack(spacing: 16) {
+                Circle()
+                    .fill(Color.white.opacity(0.2))
+                    .frame(width: 48, height: 48)
+                    .overlay(
+                        Image(systemName: "plus")
+                            .font(.title2)
+                            .fontWeight(.semibold)
+                            .foregroundStyle(.white)
+                    )
+                VStack(alignment: .leading, spacing: 2) {
+                    Text("Log an experience")
+                        .font(.headline)
+                        .fontWeight(.semibold)
+                    Text("Quick & easy, under 60 seconds")
+                        .font(.subheadline)
+                        .opacity(0.8)
+                }
+                Spacer()
             }
             .foregroundStyle(.white)
-            .frame(maxWidth: .infinity)
-            .padding(.vertical, 14)
+            .padding(16)
             .background(WorthItTheme.coral)
             .clipShape(RoundedRectangle(cornerRadius: WorthItTheme.cornerRadius))
             .shadow(
-                color: WorthItTheme.coral.opacity(0.35),
-                radius: 10,
+                color: WorthItTheme.coral.opacity(0.3),
+                radius: 12,
                 x: 0,
                 y: 4
             )
@@ -108,8 +121,8 @@ struct HomeView: View {
 
     private var recentSection: some View {
         VStack(alignment: .leading, spacing: 12) {
-            Text("Recent")
-                .font(WorthItTheme.title3Font)
+            Text("Recent memories")
+                .font(.system(size: 18, weight: .medium, design: .serif))
                 .foregroundStyle(.primary)
 
             if recentToShow.isEmpty {
@@ -124,7 +137,7 @@ struct HomeView: View {
                 VStack(spacing: 10) {
                     ForEach(recentToShow) { entry in
                         NavigationLink(value: entry) {
-                            HomeEntryRow(entry: entry)
+                            EntryCardView(entry: entry)
                         }
                         .buttonStyle(.plain)
                     }
@@ -137,59 +150,65 @@ struct HomeView: View {
     }
 }
 
-// MARK: - Row
+// MARK: - Entry card (reference design)
 
-struct HomeEntryRow: View {
+struct EntryCardView: View {
     let entry: Entry
 
     var body: some View {
         HStack(alignment: .top, spacing: 12) {
-            WorthItBadge(value: entry.worthIt)
             VStack(alignment: .leading, spacing: 4) {
-                Text(entry.action)
-                    .font(WorthItTheme.bodyFont)
-                    .fontWeight(.medium)
-                    .foregroundStyle(.primary)
-                HStack(spacing: 6) {
-                    Text(entry.category.displayName)
-                        .font(WorthItTheme.footnoteFont)
-                        .foregroundStyle(WorthItTheme.muted)
-                    if let first = entry.context.first {
-                        Text("·")
-                            .foregroundStyle(WorthItTheme.muted)
-                        Text(first.displayName)
-                            .font(WorthItTheme.footnoteFont)
-                            .foregroundStyle(WorthItTheme.muted)
-                    }
+                HStack(spacing: 8) {
+                    Text(entry.category.emoji)
+                        .font(.title3)
+                    Text(entry.action)
+                        .font(.headline)
+                        .fontWeight(.medium)
+                        .lineLimit(2)
+                        .foregroundStyle(.primary)
+                }
+                HStack(spacing: 4) {
+                    Text(entry.context.first?.displayName ?? "")
+                        .font(.subheadline)
+                        .foregroundStyle(.secondary)
+                    Text("·")
+                        .foregroundStyle(.secondary)
+                    Text(entry.createdAt.timeAgoDisplay())
+                        .font(.subheadline)
+                        .foregroundStyle(.secondary)
                 }
             }
             Spacer(minLength: 0)
-            Image(systemName: "chevron.right")
-                .font(.caption)
-                .foregroundStyle(WorthItTheme.muted)
+            VStack(alignment: .trailing, spacing: 4) {
+                Text(entry.physicalRating.emoji)
+                    .font(.title2)
+                WorthBadge(worthIt: entry.worthIt)
+            }
         }
         .padding(16)
-        .worthItCard()
+        .background(WorthItTheme.surface)
+        .clipShape(RoundedRectangle(cornerRadius: 12))
+        .shadow(color: .black.opacity(0.06), radius: 8, x: 0, y: 2)
     }
 }
 
-// MARK: - Worth-it badge
+// MARK: - Worth badge (✓ Yes / ~ Meh / ✗ No)
 
-struct WorthItBadge: View {
-    let value: WorthIt
+struct WorthBadge: View {
+    let worthIt: WorthIt
 
     var body: some View {
-        Circle()
-            .fill(color)
-            .frame(width: 10, height: 10)
-    }
-
-    private var color: Color {
-        switch value {
-        case .yes: return Color.green
-        case .meh: return Color.orange
-        case .no: return WorthItTheme.coral
+        HStack(spacing: 2) {
+            Text(worthIt.emoji)
+            Text(worthIt.label)
         }
+        .font(.caption)
+        .fontWeight(.medium)
+        .foregroundStyle(worthIt.badgeColor)
+        .padding(.horizontal, 8)
+        .padding(.vertical, 4)
+        .background(worthIt.badgeColor.opacity(0.12))
+        .clipShape(RoundedRectangle(cornerRadius: 12))
     }
 }
 

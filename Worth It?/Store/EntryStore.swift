@@ -43,6 +43,16 @@ final class EntryStore {
     private static var sampleEntries: [Entry] {
         [
             Entry(
+                action: "Had spicy ramen at night",
+                category: .food,
+                context: [.lateNight],
+                physicalRating: .bad,
+                emotionalTags: ["regret", "tired"],
+                worthIt: .no,
+                note: "My stomach hurt all night",
+                createdAt: Date().addingTimeInterval(-840)
+            ),
+            Entry(
                 action: "Late-night snack",
                 category: .food,
                 context: [.lateNight],

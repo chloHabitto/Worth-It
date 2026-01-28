@@ -44,12 +44,7 @@ struct EntryDetailView: View {
 
     private var headerBlock: some View {
         VStack(alignment: .leading, spacing: 8) {
-            HStack(alignment: .center, spacing: 10) {
-                WorthItBadge(value: entry.worthIt)
-                Text(entry.worthIt.displayName)
-                    .font(WorthItTheme.footnoteFont)
-                    .foregroundStyle(WorthItTheme.muted)
-            }
+            WorthBadge(worthIt: entry.worthIt)
             Text(entry.action)
                 .font(WorthItTheme.title2Font)
                 .foregroundStyle(.primary)
