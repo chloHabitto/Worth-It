@@ -24,7 +24,7 @@ struct MainTabView: View {
                     }
                 }
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
-                .padding(.bottom, 70) // Space for tab bar
+                .padding(.bottom, 78) // Space for tab bar
 
                 // Custom tab bar
                 VStack(spacing: 0) {
@@ -50,8 +50,8 @@ struct MainTabView: View {
                     .padding(.vertical, 12)
                 }
                 .frame(maxWidth: .infinity)
-                .background(AppColors.card.opacity(0.8))
-                .padding(.bottom, geometry.safeAreaInsets.bottom)
+                .padding(.bottom, geometry.safeAreaInsets.bottom + 8) // Extra 8pt for easier tapping
+                .background(AppColors.card.opacity(0.8)) // Background AFTER padding so it fills safe area
 
                 // FAB button - positioned separately
                 Button(action: { showLogSheet = true }) {
@@ -65,7 +65,7 @@ struct MainTabView: View {
                         )
                         .shadow(color: AppColors.primary.opacity(0.15), radius: 20, x: 0, y: 0)
                 }
-                .offset(y: -(geometry.safeAreaInsets.bottom + 28))
+                .offset(y: -(geometry.safeAreaInsets.bottom + 8 + 28)) // Add the extra 8pt
             }
         }
         .ignoresSafeArea(edges: .bottom)
