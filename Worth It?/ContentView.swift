@@ -2,18 +2,32 @@
 //  ContentView.swift
 //  Worth It?
 //
-//  Created by Chloe Lee on 2026-01-28.
+//  Root view that bridges SwiftData to EntryStore
 //
 
 import SwiftUI
+import SwiftData
 
 struct ContentView: View {
+    @Environment(\.modelContext) private var modelContext
+    @State private var entryStore: EntryStore?
+
     var body: some View {
-        MainTabView()
+        Group {
+            if let store = entryStore {
+                MainTabView()
+                    .environment(store)
+            } else {
+                ProgressView()
+                    .onAppear {
+                        entryStore = EntryStore(modelContext: modelContext)
+                    }
+            }
+        }
     }
 }
 
 #Preview {
     ContentView()
-        .environment(EntryStore.preview)
+        .modelContainer(for: Entry.self, inMemory: true)
 }

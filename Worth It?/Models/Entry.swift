@@ -2,9 +2,12 @@
 //  Entry.swift
 //  Worth It?
 //
+//  SwiftData model with iCloud sync support
+//
 
 import Foundation
 import SwiftUI
+import SwiftData
 
 // MARK: - Enums
 
@@ -105,18 +108,44 @@ enum WorthIt: String, CaseIterable, Codable {
     var badgeColor: Color { color }
 }
 
-// MARK: - Entry
+// MARK: - Entry (SwiftData Model)
 
-struct Entry: Identifiable, Codable, Equatable, Hashable {
-    var id: UUID
+@Model
+final class Entry {
+    // Using @Attribute for unique constraint on id
+    @Attribute(.unique) var id: UUID
     var action: String
-    var category: EntryCategory
-    var context: [TimeContext]
-    var physicalRating: PhysicalRating
+    var categoryRaw: String
+    var contextRaw: [String]
+    var physicalRatingRaw: String
     var emotionalTags: [String]
-    var worthIt: WorthIt
+    var worthItRaw: String
     var note: String
     var createdAt: Date
+
+    // MARK: - Computed Properties for Type-Safe Access
+
+    var category: EntryCategory {
+        get { EntryCategory(rawValue: categoryRaw) ?? .other }
+        set { categoryRaw = newValue.rawValue }
+    }
+
+    var context: [TimeContext] {
+        get { contextRaw.compactMap { TimeContext(rawValue: $0) } }
+        set { contextRaw = newValue.map(\.rawValue) }
+    }
+
+    var physicalRating: PhysicalRating {
+        get { PhysicalRating(rawValue: physicalRatingRaw) ?? .meh }
+        set { physicalRatingRaw = newValue.rawValue }
+    }
+
+    var worthIt: WorthIt {
+        get { WorthIt(rawValue: worthItRaw) ?? .meh }
+        set { worthItRaw = newValue.rawValue }
+    }
+
+    // MARK: - Initializer
 
     init(
         id: UUID = UUID(),
@@ -131,13 +160,21 @@ struct Entry: Identifiable, Codable, Equatable, Hashable {
     ) {
         self.id = id
         self.action = action
-        self.category = category
-        self.context = context
-        self.physicalRating = physicalRating
+        self.categoryRaw = category.rawValue
+        self.contextRaw = context.map(\.rawValue)
+        self.physicalRatingRaw = physicalRating.rawValue
         self.emotionalTags = emotionalTags
-        self.worthIt = worthIt
+        self.worthItRaw = worthIt.rawValue
         self.note = note
         self.createdAt = createdAt
+    }
+}
+
+// MARK: - Hashable Conformance
+
+extension Entry: Hashable {
+    static func == (lhs: Entry, rhs: Entry) -> Bool {
+        lhs.id == rhs.id
     }
 
     func hash(into hasher: inout Hasher) {
@@ -193,7 +230,7 @@ extension Entry {
     }
 }
 
-// MARK: - Date
+// MARK: - Date Extension
 
 extension Date {
     func timeAgoDisplay() -> String {

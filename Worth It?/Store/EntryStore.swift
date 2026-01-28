@@ -2,26 +2,31 @@
 //  EntryStore.swift
 //  Worth It?
 //
+//  Thin wrapper around SwiftData for shared access pattern
+//
 
 import Foundation
+import SwiftData
 
 @Observable
 final class EntryStore {
-    var entries: [Entry] = []
+    private let modelContext: ModelContext
 
-    init(entries: [Entry] = []) {
-        self.entries = entries
+    init(modelContext: ModelContext) {
+        self.modelContext = modelContext
     }
 
-    /// Use only in SwiftUI previews — production app starts with empty entries.
-    static var preview: EntryStore {
-        let store = EntryStore()
-        store.entries = Entry.sampleEntries
-        return store
+    // MARK: - Fetching
+
+    var entries: [Entry] {
+        let descriptor = FetchDescriptor<Entry>(
+            sortBy: [SortDescriptor(\.createdAt, order: .reverse)]
+        )
+        return (try? modelContext.fetch(descriptor)) ?? []
     }
 
     var recentEntries: [Entry] {
-        entries.sorted { $0.createdAt > $1.createdAt }
+        entries
     }
 
     func entries(matching query: String) -> [Entry] {
@@ -35,15 +40,48 @@ final class EntryStore {
         }
     }
 
+    // MARK: - Mutations
+
     func add(_ entry: Entry) {
-        entries.insert(entry, at: 0)
+        modelContext.insert(entry)
+        save()
     }
 
     func delete(_ entry: Entry) {
-        entries.removeAll { $0.id == entry.id }
+        modelContext.delete(entry)
+        save()
     }
 
     func delete(ids: Set<UUID>) {
-        entries.removeAll { ids.contains($0.id) }
+        for entry in entries where ids.contains(entry.id) {
+            modelContext.delete(entry)
+        }
+        save()
+    }
+
+    // MARK: - Persistence
+
+    private func save() {
+        do {
+            try modelContext.save()
+        } catch {
+            print("Failed to save: \(error)")
+        }
+    }
+
+    // MARK: - Preview Support
+
+    @MainActor
+    static var preview: EntryStore {
+        let config = ModelConfiguration(isStoredInMemoryOnly: true)
+        let container = try! ModelContainer(for: Entry.self, configurations: config)
+        let store = EntryStore(modelContext: container.mainContext)
+
+        // Insert sample data
+        for entry in Entry.sampleEntries {
+            container.mainContext.insert(entry)
+        }
+
+        return store
     }
 }
