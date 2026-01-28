@@ -24,7 +24,7 @@ struct MainTabView: View {
                     }
                 }
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
-                .padding(.bottom, 60) // Space for tab bar
+                .padding(.bottom, 70) // Space for tab bar
 
                 // Custom tab bar
                 VStack(spacing: 0) {
@@ -47,7 +47,7 @@ struct MainTabView: View {
                         TabButton(icon: "person", iconFilled: "person.fill", label: "Account", isSelected: selectedTab == 3) { selectedTab = 3 }
                     }
                     .padding(.horizontal, 8)
-                    .padding(.vertical, 8)
+                    .padding(.vertical, 12)
                 }
                 .frame(maxWidth: .infinity)
                 .background(AppColors.card.opacity(0.8))
@@ -94,7 +94,7 @@ struct TabButton: View {
                     .font(.system(size: 10, weight: isSelected ? .medium : .regular))
                     .foregroundStyle(isSelected ? AppColors.primary : AppColors.mutedForeground)
             }
-            .padding(.vertical, 4)
+            .padding(.vertical, 6)
             .padding(.horizontal, 8)
         }
         .frame(maxWidth: .infinity)
