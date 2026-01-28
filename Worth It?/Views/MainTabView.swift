@@ -94,7 +94,8 @@ struct TabButton: View {
                     .font(.system(size: 10, weight: isSelected ? .medium : .regular))
                     .foregroundStyle(isSelected ? AppColors.primary : AppColors.mutedForeground)
             }
-            .padding(.vertical, 6)
+            .padding(.top, 2)
+            .padding(.bottom, 10)
             .padding(.horizontal, 8)
         }
         .frame(maxWidth: .infinity)
