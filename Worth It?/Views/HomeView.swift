@@ -89,7 +89,7 @@ struct HomeView: View {
             .navigationBarTitleDisplayMode(.inline)
             .toolbar(.hidden, for: .navigationBar)
             .navigationDestination(for: Entry.self) { entry in
-                EntryDetailView(entry: entry, onDelete: { store.delete(entry) })
+                EntryDetailView(entry: entry, onDelete: { store.delete(entry) }, onUpdate: { store.update(updated: $0) })
             }
             .sheet(isPresented: $showLogSheet) {
                 LogExperienceView(store: store)

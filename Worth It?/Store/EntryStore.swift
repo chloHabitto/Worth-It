@@ -59,6 +59,18 @@ final class EntryStore {
         save()
     }
 
+    func update(updated: Entry) {
+        guard let existing = entries.first(where: { $0.id == updated.id }) else { return }
+        existing.action = updated.action
+        existing.category = updated.category
+        existing.context = updated.context
+        existing.physicalRating = updated.physicalRating
+        existing.emotionalTags = updated.emotionalTags
+        existing.worthIt = updated.worthIt
+        existing.note = updated.note
+        save()
+    }
+
     // MARK: - Persistence
 
     private func save() {
