@@ -11,18 +11,17 @@ struct MainTabView: View {
     @State private var showLogSheet = false
 
     var body: some View {
-        ZStack(alignment: .bottom) {
-            Group {
-                switch selectedTab {
-                case 0: HomeView()
-                case 1: SearchView()
-                case 2: LibraryView()
-                case 3: AccountView()
-                default: HomeView()
-                }
+        Group {
+            switch selectedTab {
+            case 0: HomeView()
+            case 1: SearchView()
+            case 2: LibraryView()
+            case 3: AccountView()
+            default: HomeView()
             }
-            .frame(maxWidth: .infinity, maxHeight: .infinity)
-
+        }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .safeAreaInset(edge: .bottom, spacing: 0) {
             tabBar
         }
         .ignoresSafeArea(.keyboard)
@@ -31,7 +30,7 @@ struct MainTabView: View {
         }
     }
 
-    // bg-card/80, border-t border-border/50. Only background extends into safe area.
+    // bg-card/80, border-t border-border/50 (NO shadow on tab bar)
     private var tabBar: some View {
         VStack(spacing: 0) {
             Rectangle()
@@ -83,10 +82,7 @@ struct MainTabView: View {
             .padding(.horizontal, 16) // px-4
             .padding(.vertical, 8)    // py-2
         }
-        .background(
-            AppColors.card.opacity(0.8)
-                .ignoresSafeArea(edges: .bottom)
-        )
+        .background(AppColors.card.opacity(0.8))
     }
 }
 
