@@ -52,6 +52,8 @@ struct EntryDetailView: View {
         .scrollIndicators(.hidden)
         .background(AppColors.background)
         .navigationBarTitleDisplayMode(.inline)
+        .navigationBarBackButtonHidden(true)
+        .toolbar(.visible, for: .navigationBar)
         .toolbar {
             if isEditing {
                 ToolbarItem(placement: .cancellationAction) {
@@ -75,11 +77,13 @@ struct EntryDetailView: View {
                     }
                 }
             } else {
-                ToolbarItem(placement: .cancellationAction) {
+                ToolbarItem(placement: .navigationBarLeading) {
                     Button {
                         dismiss()
                     } label: {
                         Image(systemName: "chevron.left")
+                            .font(.system(size: 16, weight: .medium))
+                            .foregroundStyle(AppColors.foreground)
                     }
                 }
                 ToolbarItem(placement: .principal) {
@@ -87,7 +91,7 @@ struct EntryDetailView: View {
                         .font(.system(size: 20, weight: .medium, design: .serif))
                         .foregroundStyle(AppColors.foreground)
                 }
-                ToolbarItem(placement: .confirmationAction) {
+                ToolbarItem(placement: .navigationBarTrailing) {
                     Button {
                         startEditing()
                     } label: {
