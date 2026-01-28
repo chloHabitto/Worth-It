@@ -5,137 +5,123 @@
 
 import SwiftUI
 
-enum Tab: Int, CaseIterable {
-    case home = 0
-    case search
-    case library
-    case account
-
-    var title: String {
-        switch self {
-        case .home: return "Home"
-        case .search: return "Search"
-        case .library: return "Library"
-        case .account: return "Account"
-        }
-    }
-
-    var icon: String {
-        switch self {
-        case .home: return "house.fill"
-        case .search: return "magnifyingglass"
-        case .library: return "books.vertical.fill"
-        case .account: return "person.fill"
-        }
-    }
-}
-
 struct MainTabView: View {
     @Environment(EntryStore.self) private var store
-    @State private var selectedTab: Tab = .home
-    @State private var showLogExperience = false
+    @State private var selectedTab = 0
+    @State private var showLogSheet = false
 
     var body: some View {
         ZStack(alignment: .bottom) {
-            tabContent
-            tabBarOverlay
-        }
-        .ignoresSafeArea(.keyboard)
-        .sheet(isPresented: $showLogExperience) {
-            LogExperienceView(store: store)
-        }
-    }
-
-    @ViewBuilder
-    private var tabContent: some View {
-        switch selectedTab {
-        case .home:
-            HomeView()
-        case .search:
-            SearchView()
-        case .library:
-            LibraryView()
-        case .account:
-            AccountView()
-        }
-    }
-
-    private var tabBarOverlay: some View {
-        VStack(spacing: 0) {
-            Spacer()
-            HStack(spacing: 0) {
-                tabButton(.home)
-                tabButton(.search)
-                Spacer()
-                    .frame(width: 56) // space for FAB
-                tabButton(.library)
-                tabButton(.account)
+            Group {
+                switch selectedTab {
+                case 0: HomeView()
+                case 1: SearchView()
+                case 2: LibraryView()
+                case 3: AccountView()
+                default: HomeView()
+                }
             }
-            .overlay(alignment: .center) {
-                floatingAddButton
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
+
+            // Custom tab bar: bg-card/80 backdrop-blur-lg border-t border-border/50
+            VStack(spacing: 0) {
+                Divider()
+                    .background(AppColors.border.opacity(0.5))
+
+                HStack(spacing: 0) {
+                    TabButton(
+                        icon: "house",
+                        iconFilled: "house.fill",
+                        label: "Home",
+                        isSelected: selectedTab == 0
+                    ) { selectedTab = 0 }
+
+                    TabButton(
+                        icon: "magnifyingglass",
+                        iconFilled: "magnifyingglass",
+                        label: "Search",
+                        isSelected: selectedTab == 1
+                    ) { selectedTab = 1 }
+
+                    Button(action: { showLogSheet = true }) {
+                        Circle()
+                            .fill(AppColors.primary)
+                            .frame(width: 56, height: 56)
+                            .overlay(
+                                Image(systemName: "plus")
+                                    .font(.system(size: 24, weight: .medium))
+                                    .foregroundStyle(AppColors.primaryForeground)
+                            )
+                            .shadow(color: AppColors.primary.opacity(0.15), radius: 40, x: 0, y: 0)
+                    }
+                    .offset(y: -32)
+
+                    TabButton(
+                        icon: "chart.bar",
+                        iconFilled: "chart.bar.fill",
+                        label: "Library",
+                        isSelected: selectedTab == 2
+                    ) { selectedTab = 2 }
+
+                    TabButton(
+                        icon: "person",
+                        iconFilled: "person.fill",
+                        label: "Account",
+                        isSelected: selectedTab == 3
+                    ) { selectedTab = 3 }
+                }
+                .padding(.horizontal, 16)
+                .padding(.vertical, 8)
             }
-            .padding(.horizontal, 8)
-            .padding(.top, 10)
-            .padding(.bottom, 24)
             .background(
-                WorthItColors.card
-                    .opacity(0.95)
+                AppColors.card.opacity(0.8)
                     .background(.ultraThinMaterial)
-                    .shadow(color: WorthItColors.border, radius: 0, y: -0.5)
             )
             .ignoresSafeArea(edges: .bottom)
         }
-    }
-
-    private func tabButton(_ tab: Tab) -> some View {
-        let isSelected = selectedTab == tab
-        return Button {
-            selectedTab = tab
-        } label: {
-            VStack(spacing: 4) {
-                Image(systemName: tab.icon)
-                    .font(.system(size: 20))
-                Text(tab.title)
-                    .font(WorthItTheme.footnoteFont)
-            }
-            .frame(maxWidth: .infinity)
-            .foregroundStyle(isSelected ? WorthItColors.primary : WorthItColors.mutedForeground)
+        .ignoresSafeArea(.keyboard)
+        .sheet(isPresented: $showLogSheet) {
+            LogExperienceView(store: store)
         }
-        .buttonStyle(.plain)
-    }
-
-    private var floatingAddButton: some View {
-        Button {
-            showLogExperience = true
-        } label: {
-            Image(systemName: "plus")
-                .font(.system(size: 22, weight: .semibold))
-                .foregroundStyle(.white)
-                .frame(width: 56, height: 56)
-                .background(WorthItColors.primary)
-                .clipShape(Circle())
-                .shadow(
-                    color: WorthItShadows.glow,
-                    radius: 10,
-                    x: 0,
-                    y: 4
-                )
-        }
-        .offset(y: -18)
     }
 }
 
-// Placeholder views (to be filled when building those screens)
+struct TabButton: View {
+    let icon: String
+    let iconFilled: String
+    let label: String
+    let isSelected: Bool
+    let action: () -> Void
+
+    var body: some View {
+        Button(action: action) {
+            VStack(spacing: 4) {
+                Image(systemName: isSelected ? iconFilled : icon)
+                    .font(.system(size: 20))
+                    .foregroundStyle(isSelected ? AppColors.primary : AppColors.mutedForeground)
+                    .scaleEffect(isSelected ? 1.1 : 1.0)
+                    .animation(.easeInOut(duration: 0.2), value: isSelected)
+
+                Text(label)
+                    .font(.system(size: 10, weight: isSelected ? .medium : .regular))
+                    .foregroundStyle(isSelected ? AppColors.primary : AppColors.mutedForeground)
+            }
+            .padding(.vertical, 8)
+            .padding(.horizontal, 12)
+        }
+        .frame(maxWidth: .infinity)
+    }
+}
 
 struct SearchView: View {
     var body: some View {
         NavigationStack {
             Text("Search")
-                .font(WorthItTheme.title2Font)
+                .font(.system(size: 22, weight: .medium, design: .serif))
             Spacer()
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .background(WorthItTheme.background)
+        .background(AppColors.background)
     }
 }
 
@@ -143,11 +129,11 @@ struct LibraryView: View {
     var body: some View {
         NavigationStack {
             Text("Library")
-                .font(WorthItTheme.title2Font)
+                .font(.system(size: 22, weight: .medium, design: .serif))
             Spacer()
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .background(WorthItTheme.background)
+        .background(AppColors.background)
     }
 }
 
@@ -155,11 +141,11 @@ struct AccountView: View {
     var body: some View {
         NavigationStack {
             Text("Account")
-                .font(WorthItTheme.title2Font)
+                .font(.system(size: 22, weight: .medium, design: .serif))
             Spacer()
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .background(WorthItTheme.background)
+        .background(AppColors.background)
     }
 }
 

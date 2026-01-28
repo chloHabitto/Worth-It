@@ -23,12 +23,12 @@ struct EntryDetailView: View {
             .padding(20)
             .padding(.bottom, 40)
         }
-        .background(WorthItTheme.background)
+        .background(AppColors.background)
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
             ToolbarItem(placement: .cancellationAction) {
                 Button("Back") { dismiss() }
-                    .foregroundStyle(WorthItTheme.coral)
+                    .foregroundStyle(AppColors.primary)
             }
         }
         .confirmationDialog("Delete this entry?", isPresented: $showDeleteConfirm, titleVisibility: .visible) {
@@ -44,13 +44,13 @@ struct EntryDetailView: View {
 
     private var headerBlock: some View {
         VStack(alignment: .leading, spacing: 8) {
-            WorthBadgeView(worthIt: entry.worthIt)
+            WorthBadge(worthIt: entry.worthIt)
             Text(entry.action)
-                .font(WorthItTheme.title2Font)
-                .foregroundStyle(.primary)
+                .font(.system(size: 22, weight: .medium, design: .serif))
+                .foregroundStyle(AppColors.foreground)
             Text(entry.createdAt, style: .date)
-                .font(WorthItTheme.footnoteFont)
-                .foregroundStyle(WorthItTheme.muted)
+                .font(.footnote)
+                .foregroundStyle(AppColors.mutedForeground)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(16)
@@ -81,11 +81,11 @@ struct EntryDetailView: View {
     private var noteBlock: some View {
         VStack(alignment: .leading, spacing: 8) {
             Text("Note")
-                .font(WorthItTheme.headlineFont)
-                .foregroundStyle(.primary)
+                .font(.headline)
+                .foregroundStyle(AppColors.foreground)
             Text(entry.note)
-                .font(WorthItTheme.bodyFont)
-                .foregroundStyle(.secondary)
+                .font(.body)
+                .foregroundStyle(AppColors.mutedForeground)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(16)
@@ -110,12 +110,12 @@ struct DetailRow: View {
     var body: some View {
         HStack(alignment: .top) {
             Text(label)
-                .font(WorthItTheme.footnoteFont)
-                .foregroundStyle(WorthItTheme.muted)
+                .font(.footnote)
+                .foregroundStyle(AppColors.mutedForeground)
                 .frame(width: 80, alignment: .leading)
             Text(value)
-                .font(WorthItTheme.bodyFont)
-                .foregroundStyle(.primary)
+                .font(.body)
+                .foregroundStyle(AppColors.foreground)
             Spacer(minLength: 0)
         }
     }
