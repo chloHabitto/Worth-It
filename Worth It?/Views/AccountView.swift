@@ -2,7 +2,7 @@
 //  AccountView.swift
 //  Worth It?
 //
-//  Translated from AccountPage.tsx
+//  Translated from AccountPage.tsx (recall-resolve)
 //
 
 import SwiftUI
@@ -67,10 +67,14 @@ struct AccountView: View {
                             .pageEntrance(delay: 0.05, offsetY: 10)
                         appearanceSection
                             .pageEntrance(delay: 0.1, offsetY: 10)
-                        dataSection
+                        dataPrivacySection
                             .pageEntrance(delay: 0.15, offsetY: 10)
+                        supportSection
+                            .pageEntrance(delay: 0.2, offsetY: 10)
+                        aboutSection
+                            .pageEntrance(delay: 0.25, offsetY: 10)
                         footer
-                            .fadeIn(delay: 0.2)
+                            .fadeIn(delay: 0.3)
                     }
                     .padding(.horizontal, 24)
                 }
@@ -193,56 +197,90 @@ struct AccountView: View {
         .shadow(color: AppShadows.soft, radius: AppShadows.softRadius, x: 0, y: AppShadows.softY)
     }
 
-    // MARK: - Data Section
+    // MARK: - Data & Privacy Section
 
-    private var dataSection: some View {
-        VStack(spacing: 0) {
-            HStack {
-                Text("Data")
-                    .font(.system(size: 14, weight: .semibold))
-                    .foregroundStyle(AppColors.mutedForeground)
-                Spacer()
-            }
-            .padding(.horizontal, 20)
-            .padding(.vertical, 12)
-            .background(AppColors.muted.opacity(0.3))
+    private var dataPrivacySection: some View {
+        SectionCard(title: "Data & Privacy") {
+            SettingsRow(
+                icon: "square.and.arrow.down",
+                label: "Export My Data",
+                sublabel: "Download all your memories as JSON",
+                action: handleExportData
+            )
 
-            Divider()
-                .background(AppColors.border.opacity(0.5))
+            SettingsRow(
+                icon: "shield",
+                label: "Privacy Policy",
+                sublabel: "How we handle your data",
+                isExternal: true,
+                action: { /* TODO: Open privacy policy */ }
+            )
 
-            Button {
-                showClearDataAlert = true
-            } label: {
-                HStack(spacing: 12) {
-                    Image(systemName: "trash")
-                        .font(.system(size: 20))
+            SettingsRow(
+                icon: "doc.text",
+                label: "Terms of Use",
+                sublabel: "Our terms and conditions",
+                isExternal: true,
+                action: { /* TODO: Open terms */ }
+            )
 
-                    VStack(alignment: .leading, spacing: 2) {
-                        Text("Clear all memories")
-                            .font(.system(size: 16, weight: .medium))
-                        Text("Permanently delete all logged entries")
-                            .font(.system(size: 12))
-                            .opacity(0.7)
-                    }
-
-                    Spacer()
-
-                    Image(systemName: "chevron.right")
-                        .font(.system(size: 14))
-                        .opacity(0.5)
-                }
-                .foregroundStyle(AppColors.destructive)
-                .padding(16)
-            }
-            .buttonStyle(.plain)
+            SettingsRow(
+                icon: "trash",
+                label: "Clear All Memories",
+                sublabel: "Permanently delete all logged entries",
+                isDestructive: true,
+                action: { showClearDataAlert = true }
+            )
         }
-        .background(AppColors.card)
-        .clipShape(RoundedRectangle(cornerRadius: 16))
-        .overlay(
-            RoundedRectangle(cornerRadius: 16)
-                .stroke(AppColors.border.opacity(0.5), lineWidth: 1)
-        )
-        .shadow(color: AppShadows.soft, radius: AppShadows.softRadius, x: 0, y: AppShadows.softY)
+    }
+
+    // MARK: - Support Section
+
+    private var supportSection: some View {
+        SectionCard(title: "Support") {
+            SettingsRow(
+                icon: "questionmark.circle",
+                label: "Help / FAQ",
+                sublabel: "Get answers to common questions",
+                action: { /* TODO: Open help */ }
+            )
+
+            SettingsRow(
+                icon: "envelope",
+                label: "Contact Us",
+                sublabel: "Reach out to our team",
+                action: { /* TODO: Open contact */ }
+            )
+
+            SettingsRow(
+                icon: "bubble.left.and.bubble.right",
+                label: "Send Feedback",
+                sublabel: "Help us improve Worth It?",
+                action: { /* TODO: Open feedback */ }
+            )
+        }
+    }
+
+    // MARK: - About Section
+
+    private var aboutSection: some View {
+        SectionCard(title: "About") {
+            SettingsRow(
+                icon: "star",
+                label: "Rate Worth It?",
+                sublabel: "Leave a review on the App Store",
+                isExternal: true,
+                action: handleRateApp
+            )
+
+            SettingsRow(
+                icon: "square.and.arrow.up",
+                label: "Share with Friends",
+                sublabel: "Spread the word",
+                action: handleShare
+            )
+
+        }
     }
 
     // MARK: - Footer
@@ -253,11 +291,7 @@ struct AccountView: View {
                 .font(.system(size: 14, weight: .medium))
                 .foregroundStyle(AppColors.mutedForeground)
 
-            Text("Version 1.0")
-                .font(.system(size: 12))
-                .foregroundStyle(AppColors.mutedForeground.opacity(0.7))
-
-            Text("Made with ❤️ for mindful living")
+            Text("v1.0 · Made with 🧡")
                 .font(.system(size: 12))
                 .foregroundStyle(AppColors.mutedForeground.opacity(0.7))
         }
@@ -271,6 +305,140 @@ struct AccountView: View {
     private func handleClearData() {
         let allIds = Set(store.entries.map { $0.id })
         store.delete(ids: allIds)
+    }
+
+    private func handleExportData() {
+        let encoder = JSONEncoder()
+        encoder.outputFormatting = [.prettyPrinted, .sortedKeys]
+        encoder.dateEncodingStrategy = .iso8601
+
+        guard let data = try? encoder.encode(store.entries),
+              let jsonString = String(data: data, encoding: .utf8) else {
+            return
+        }
+
+        let dateFormatter = DateFormatter()
+        dateFormatter.dateFormat = "yyyy-MM-dd"
+        let dateString = dateFormatter.string(from: Date())
+        let filename = "worthit-export-\(dateString).json"
+
+        let tempURL = FileManager.default.temporaryDirectory.appendingPathComponent(filename)
+        try? jsonString.write(to: tempURL, atomically: true, encoding: .utf8)
+
+        let activityVC = UIActivityViewController(
+            activityItems: [tempURL],
+            applicationActivities: nil
+        )
+
+        if let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
+           let rootVC = windowScene.windows.first?.rootViewController {
+            rootVC.present(activityVC, animated: true)
+        }
+    }
+
+    private func handleRateApp() {
+        // TODO: Replace with actual App Store ID
+        if let url = URL(string: "https://apps.apple.com/app/id123456789?action=write-review") {
+            UIApplication.shared.open(url)
+        }
+    }
+
+    private func handleShare() {
+        let shareText = "Before you do it again… remember how it felt last time."
+        let appURL = URL(string: "https://apps.apple.com/app/id123456789")!
+
+        let activityVC = UIActivityViewController(
+            activityItems: [shareText, appURL],
+            applicationActivities: nil
+        )
+
+        if let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
+           let rootVC = windowScene.windows.first?.rootViewController {
+            rootVC.present(activityVC, animated: true)
+        }
+    }
+}
+
+// MARK: - Section Card (reusable pattern from React)
+
+struct SectionCard<Content: View>: View {
+    let title: String
+    @ViewBuilder let content: Content
+
+    var body: some View {
+        VStack(spacing: 0) {
+            // Header: px-5 py-3 bg-muted/30 border-b
+            HStack {
+                Text(title)
+                    .font(.system(size: 14, weight: .semibold))
+                    .foregroundStyle(AppColors.mutedForeground)
+                Spacer()
+            }
+            .padding(.horizontal, 20)
+            .padding(.vertical, 12)
+            .background(AppColors.muted.opacity(0.3))
+
+            Divider()
+                .background(AppColors.border.opacity(0.5))
+
+            // Content with dividers between rows
+            VStack(spacing: 0) {
+                content
+            }
+        }
+        .background(AppColors.card)
+        .clipShape(RoundedRectangle(cornerRadius: 16))
+        .overlay(
+            RoundedRectangle(cornerRadius: 16)
+                .stroke(AppColors.border.opacity(0.5), lineWidth: 1)
+        )
+        .shadow(color: AppShadows.soft, radius: AppShadows.softRadius, x: 0, y: AppShadows.softY)
+    }
+}
+
+// MARK: - Settings Row (reusable pattern from React SettingsRow)
+
+struct SettingsRow: View {
+    let icon: String
+    let label: String
+    var sublabel: String? = nil
+    var isExternal: Bool = false
+    var isDestructive: Bool = false
+    var action: () -> Void
+
+    var body: some View {
+        Button(action: action) {
+            HStack(spacing: 12) {
+                Image(systemName: icon)
+                    .font(.system(size: 20))
+                    .frame(width: 24)
+
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(label)
+                        .font(.system(size: 16, weight: .medium))
+
+                    if let sublabel = sublabel {
+                        Text(sublabel)
+                            .font(.system(size: 12))
+                            .opacity(0.7)
+                    }
+                }
+
+                Spacer()
+
+                Image(systemName: isExternal ? "arrow.up.right" : "chevron.right")
+                    .font(.system(size: 14))
+                    .opacity(0.5)
+            }
+            .foregroundStyle(isDestructive ? AppColors.destructive : AppColors.foreground)
+            .padding(16)
+        }
+        .buttonStyle(.plain)
+        .overlay(
+            Divider()
+                .background(AppColors.border.opacity(0.5)),
+            alignment: .bottom
+        )
     }
 }
 
@@ -319,6 +487,8 @@ struct ThemeButton: View {
         .animation(.easeInOut(duration: 0.2), value: isSelected)
     }
 }
+
+// MARK: - Preview
 
 #Preview {
     AccountView()
