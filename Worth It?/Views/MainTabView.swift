@@ -78,14 +78,12 @@ struct MainTabView: View {
             .padding(.top, 10)
             .padding(.bottom, 24)
             .background(
-                WorthItTheme.surface
-                    .shadow(
-                        color: .black.opacity(0.08),
-                        radius: 12,
-                        x: 0,
-                        y: -4
-                    )
+                WorthItColors.card
+                    .opacity(0.95)
+                    .background(.ultraThinMaterial)
+                    .shadow(color: WorthItColors.border, radius: 0, y: -0.5)
             )
+            .ignoresSafeArea(edges: .bottom)
         }
     }
 
@@ -101,7 +99,7 @@ struct MainTabView: View {
                     .font(WorthItTheme.footnoteFont)
             }
             .frame(maxWidth: .infinity)
-            .foregroundStyle(isSelected ? WorthItTheme.coral : WorthItTheme.muted)
+            .foregroundStyle(isSelected ? WorthItColors.primary : WorthItColors.mutedForeground)
         }
         .buttonStyle(.plain)
     }
@@ -114,10 +112,10 @@ struct MainTabView: View {
                 .font(.system(size: 22, weight: .semibold))
                 .foregroundStyle(.white)
                 .frame(width: 56, height: 56)
-                .background(WorthItTheme.coral)
+                .background(WorthItColors.primary)
                 .clipShape(Circle())
                 .shadow(
-                    color: WorthItTheme.coral.opacity(0.4),
+                    color: WorthItShadows.glow,
                     radius: 10,
                     x: 0,
                     y: 4

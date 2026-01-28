@@ -60,6 +60,15 @@ enum PhysicalRating: String, CaseIterable, Codable {
         case .awful: return "🤢"
         }
     }
+
+    var color: Color {
+        switch self {
+        case .fine: return WorthItColors.ratingFine
+        case .meh: return WorthItColors.ratingMeh
+        case .bad: return WorthItColors.ratingBad
+        case .awful: return WorthItColors.ratingAwful
+        }
+    }
 }
 
 enum WorthIt: String, CaseIterable, Codable {
@@ -85,13 +94,15 @@ enum WorthIt: String, CaseIterable, Codable {
         }
     }
 
-    var badgeColor: Color {
+    var color: Color {
         switch self {
-        case .yes: return Color(hue: 0.40, saturation: 0.50, brightness: 0.45)
-        case .meh: return Color(hue: 0.12, saturation: 0.80, brightness: 0.50)
-        case .no: return Color(hue: 0.0, saturation: 0.70, brightness: 0.50)
+        case .yes: return WorthItColors.worthYes
+        case .meh: return WorthItColors.worthMeh
+        case .no: return WorthItColors.worthNo
         }
     }
+
+    var badgeColor: Color { color }
 }
 
 // MARK: - Entry

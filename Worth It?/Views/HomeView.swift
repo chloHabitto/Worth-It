@@ -27,12 +27,12 @@ struct HomeView: View {
                     logButtonSection
                     recentSection
                 }
-                .padding(.horizontal, 20)
+                .padding(.horizontal, WorthItLayout.horizontalPadding)
                 .padding(.top, 8)
                 .padding(.bottom, 100)
             }
             .scrollIndicators(.hidden)
-            .background(WorthItTheme.background)
+            .background(WorthItColors.background.ignoresSafeArea())
             .navigationBarTitleDisplayMode(.inline)
             .toolbar(.hidden, for: .navigationBar)
             .sheet(isPresented: $showLogExperience) {
@@ -47,10 +47,10 @@ struct HomeView: View {
         VStack(alignment: .leading, spacing: 4) {
             Text("Worth It?")
                 .font(.system(size: 36, weight: .bold, design: .serif))
-                .foregroundStyle(WorthItTheme.coral)
+                .foregroundStyle(WorthItColors.primary)
             Text("Before you do it again… remember.")
                 .font(WorthItTheme.calloutFont)
-                .foregroundStyle(WorthItTheme.muted)
+                .foregroundStyle(WorthItColors.mutedForeground)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(.top, 12)
@@ -61,19 +61,18 @@ struct HomeView: View {
     private var searchSection: some View {
         HStack(spacing: 10) {
             Image(systemName: "magnifyingglass")
-                .foregroundStyle(WorthItTheme.muted)
+                .foregroundStyle(WorthItColors.mutedForeground)
             TextField("How did I feel after...", text: $searchText)
                 .font(WorthItTheme.bodyFont)
         }
-        .padding(.horizontal, 14)
-        .padding(.vertical, 12)
-        .background(WorthItTheme.surface)
-        .clipShape(RoundedRectangle(cornerRadius: WorthItTheme.cornerRadius))
+        .padding(16)
+        .background(WorthItColors.card)
+        .clipShape(RoundedRectangle(cornerRadius: WorthItLayout.cornerRadius))
         .shadow(
-            color: .black.opacity(WorthItTheme.cardShadowOpacity),
-            radius: WorthItTheme.cardShadowRadius,
+            color: WorthItShadows.soft,
+            radius: WorthItShadows.softRadius,
             x: 0,
-            y: WorthItTheme.cardShadowY
+            y: WorthItShadows.softY
         )
     }
 
@@ -105,11 +104,11 @@ struct HomeView: View {
             }
             .foregroundStyle(.white)
             .padding(16)
-            .background(WorthItTheme.coral)
-            .clipShape(RoundedRectangle(cornerRadius: WorthItTheme.cornerRadius))
+            .background(WorthItColors.primary)
+            .clipShape(RoundedRectangle(cornerRadius: WorthItLayout.buttonCornerRadius))
             .shadow(
-                color: WorthItTheme.coral.opacity(0.3),
-                radius: 12,
+                color: WorthItShadows.glow,
+                radius: WorthItShadows.glowRadius,
                 x: 0,
                 y: 4
             )
@@ -123,12 +122,12 @@ struct HomeView: View {
         VStack(alignment: .leading, spacing: 12) {
             Text("Recent memories")
                 .font(.system(size: 18, weight: .medium, design: .serif))
-                .foregroundStyle(.primary)
+                .foregroundStyle(WorthItColors.foreground)
 
             if recentToShow.isEmpty {
                 Text("No entries yet. Log an experience to see it here.")
                     .font(WorthItTheme.subheadlineFont)
-                    .foregroundStyle(WorthItTheme.muted)
+                    .foregroundStyle(WorthItColors.mutedForeground)
                     .frame(maxWidth: .infinity, alignment: .leading)
                     .padding(.vertical, 20)
                     .padding(.horizontal, 16)
@@ -150,51 +149,65 @@ struct HomeView: View {
     }
 }
 
-// MARK: - Entry card (reference design)
+// MARK: - Entry card
 
 struct EntryCardView: View {
     let entry: Entry
+    var compact: Bool = false
 
     var body: some View {
         HStack(alignment: .top, spacing: 12) {
+            // LEFT SIDE: Emoji + Text Content
             VStack(alignment: .leading, spacing: 4) {
-                HStack(spacing: 8) {
+                // Row 1: Category emoji + ACTION TEXT
+                HStack(alignment: .top, spacing: 8) {
                     Text(entry.category.emoji)
                         .font(.title3)
+
                     Text(entry.action)
-                        .font(.headline)
+                        .font(.subheadline)
                         .fontWeight(.medium)
-                        .lineLimit(2)
-                        .foregroundStyle(.primary)
+                        .foregroundStyle(WorthItColors.cardForeground)
+                        .lineLimit(compact ? 1 : 2)
                 }
+
+                // Row 2: Time context + relative time
                 HStack(spacing: 4) {
-                    Text(entry.context.first?.displayName ?? "")
-                        .font(.subheadline)
-                        .foregroundStyle(.secondary)
+                    if let firstContext = entry.context.first {
+                        Text(firstContext.displayName)
+                    }
                     Text("·")
-                        .foregroundStyle(.secondary)
                     Text(entry.createdAt.timeAgoDisplay())
-                        .font(.subheadline)
-                        .foregroundStyle(.secondary)
                 }
+                .font(.subheadline)
+                .foregroundStyle(WorthItColors.mutedForeground)
             }
-            Spacer(minLength: 0)
-            VStack(alignment: .trailing, spacing: 4) {
+
+            Spacer(minLength: 8)
+
+            // RIGHT SIDE: Rating emoji + Worth badge
+            VStack(alignment: .trailing, spacing: 6) {
                 Text(entry.physicalRating.emoji)
                     .font(.title2)
-                WorthBadge(worthIt: entry.worthIt)
+
+                WorthBadgeView(worthIt: entry.worthIt)
             }
         }
-        .padding(16)
-        .background(WorthItTheme.surface)
-        .clipShape(RoundedRectangle(cornerRadius: 12))
-        .shadow(color: .black.opacity(0.06), radius: 8, x: 0, y: 2)
+        .padding(WorthItLayout.cardPadding)
+        .background(WorthItColors.card)
+        .clipShape(RoundedRectangle(cornerRadius: WorthItLayout.cardCornerRadius))
+        .shadow(
+            color: WorthItShadows.soft,
+            radius: WorthItShadows.softRadius,
+            x: 0,
+            y: WorthItShadows.softY
+        )
     }
 }
 
 // MARK: - Worth badge (✓ Yes / ~ Meh / ✗ No)
 
-struct WorthBadge: View {
+struct WorthBadgeView: View {
     let worthIt: WorthIt
 
     var body: some View {
@@ -204,11 +217,11 @@ struct WorthBadge: View {
         }
         .font(.caption)
         .fontWeight(.medium)
-        .foregroundStyle(worthIt.badgeColor)
+        .foregroundStyle(worthIt.color)
         .padding(.horizontal, 8)
         .padding(.vertical, 4)
-        .background(worthIt.badgeColor.opacity(0.12))
-        .clipShape(RoundedRectangle(cornerRadius: 12))
+        .background(worthIt.color.opacity(0.12))
+        .clipShape(RoundedRectangle(cornerRadius: WorthItLayout.badgeCornerRadius))
     }
 }
 
