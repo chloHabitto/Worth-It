@@ -9,9 +9,12 @@ import SwiftUI
 
 @main
 struct Worth_It_App: App {
+    @State private var entryStore = EntryStore()
+
     var body: some Scene {
         WindowGroup {
             ContentView()
+                .environment(entryStore)
         }
     }
 }
