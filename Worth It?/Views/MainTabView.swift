@@ -24,9 +24,11 @@ struct MainTabView: View {
             .frame(maxWidth: .infinity, maxHeight: .infinity)
 
             // Custom tab bar: bg-card/80 backdrop-blur-lg border-t border-border/50
+            // Background extends into safe area (no grey gap); content stays above home indicator
             VStack(spacing: 0) {
-                Divider()
-                    .background(AppColors.border.opacity(0.5))
+                Rectangle()
+                    .fill(AppColors.border.opacity(0.5))
+                    .frame(height: 0.5)
 
                 HStack(spacing: 0) {
                     TabButton(
@@ -52,9 +54,9 @@ struct MainTabView: View {
                                     .font(.system(size: 24, weight: .medium))
                                     .foregroundStyle(AppColors.primaryForeground)
                             )
-                            .shadow(color: AppColors.primary.opacity(0.15), radius: 40, x: 0, y: 0)
+                            .shadow(color: AppColors.primary.opacity(0.15), radius: 20, x: 0, y: 4)
                     }
-                    .offset(y: -32)
+                    .offset(y: -28)
 
                     TabButton(
                         icon: "chart.bar",
@@ -71,13 +73,17 @@ struct MainTabView: View {
                     ) { selectedTab = 3 }
                 }
                 .padding(.horizontal, 16)
-                .padding(.vertical, 8)
+                .padding(.top, 8)
+                .padding(.bottom, 8)
             }
             .background(
-                AppColors.card.opacity(0.8)
-                    .background(.ultraThinMaterial)
+                ZStack {
+                    AppColors.card.opacity(0.8)
+                    Rectangle()
+                        .fill(.ultraThinMaterial)
+                }
+                .ignoresSafeArea(edges: .bottom)
             )
-            .ignoresSafeArea(edges: .bottom)
         }
         .ignoresSafeArea(.keyboard)
         .sheet(isPresented: $showLogSheet) {
@@ -100,7 +106,7 @@ struct TabButton: View {
                     .font(.system(size: 20))
                     .foregroundStyle(isSelected ? AppColors.primary : AppColors.mutedForeground)
                     .scaleEffect(isSelected ? 1.1 : 1.0)
-                    .animation(.easeInOut(duration: 0.2), value: isSelected)
+                    .animation(.easeInOut(duration: 0.15), value: isSelected)
 
                 Text(label)
                     .font(.system(size: 10, weight: isSelected ? .medium : .regular))

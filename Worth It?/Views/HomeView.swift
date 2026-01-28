@@ -95,7 +95,7 @@ struct HomeView: View {
     }
 }
 
-// MARK: - Search Bar (Tailwind: pl-12 pr-10 py-6 rounded-xl shadow-soft border-border/50)
+// MARK: - Search Bar (compact height, muted placeholder, focus shadow)
 
 struct SearchBarView: View {
     @Binding var text: String
@@ -103,27 +103,30 @@ struct SearchBarView: View {
     @FocusState private var isFocused: Bool
 
     var body: some View {
-        HStack(spacing: 0) {
+        HStack(spacing: 12) {
             Image(systemName: "magnifyingglass")
                 .font(.system(size: 20))
                 .foregroundStyle(isFocused ? AppColors.primary : AppColors.mutedForeground)
-                .frame(width: 20, height: 20)
-                .padding(.leading, 16)
 
-            TextField(placeholder, text: $text)
+            TextField("", text: $text, prompt: Text(placeholder).foregroundStyle(AppColors.mutedForeground))
                 .font(.system(size: 16))
-                .padding(.leading, 12)
-                .padding(.trailing, 40)
+                .foregroundStyle(AppColors.foreground)
                 .focused($isFocused)
         }
-        .padding(.vertical, 24)
+        .padding(.horizontal, 16)
+        .padding(.vertical, 14)
         .background(AppColors.card)
         .clipShape(RoundedRectangle(cornerRadius: 12))
         .overlay(
             RoundedRectangle(cornerRadius: 12)
                 .stroke(AppColors.border.opacity(0.5), lineWidth: 1)
         )
-        .shadow(color: Color.black.opacity(0.08), radius: 20, x: 0, y: 4)
+        .shadow(
+            color: isFocused ? AppShadows.medium : AppShadows.soft,
+            radius: isFocused ? AppShadows.mediumRadius : AppShadows.softRadius,
+            x: 0,
+            y: isFocused ? AppShadows.mediumY : AppShadows.softY
+        )
     }
 }
 
@@ -179,6 +182,7 @@ struct EntryCardView: View {
 
                     Text(entry.action)
                         .font(.system(size: compact ? 14 : 16, weight: .medium))
+                        .foregroundStyle(AppColors.foreground)
                         .lineLimit(1)
                         .truncationMode(.tail)
                 }
