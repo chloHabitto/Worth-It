@@ -54,9 +54,9 @@ struct MainTabView: View {
                                     .font(.system(size: 24, weight: .medium))
                                     .foregroundStyle(AppColors.primaryForeground)
                             )
-                            .shadow(color: AppColors.primary.opacity(0.15), radius: 20, x: 0, y: 4)
+                            .shadow(color: AppColors.primary.opacity(0.15), radius: 20, x: 0, y: 0)
                     }
-                    .offset(y: -28)
+                    .offset(y: -32)
 
                     TabButton(
                         icon: "chart.bar",
@@ -72,9 +72,8 @@ struct MainTabView: View {
                         isSelected: selectedTab == 3
                     ) { selectedTab = 3 }
                 }
-                .padding(.horizontal, 16)
-                .padding(.top, 8)
-                .padding(.bottom, 8)
+                .padding(.horizontal, 16) // px-4
+                .padding(.vertical, 8)    // py-2
             }
             .background(
                 ZStack {
@@ -157,5 +156,5 @@ struct AccountView: View {
 
 #Preview {
     MainTabView()
-        .environment(EntryStore())
+        .environment(EntryStore.preview)
 }

@@ -53,19 +53,14 @@ struct HomeView: View {
                             .font(.system(size: 18, weight: .medium, design: .serif))
                             .foregroundStyle(AppColors.foreground)
 
-                        if recentToShow.isEmpty {
-                            Text("No entries yet. Log an experience to see it here.")
-                                .font(.system(size: 14))
-                                .foregroundStyle(AppColors.mutedForeground)
-                                .frame(maxWidth: .infinity, alignment: .leading)
-                                .padding(.vertical, 20)
-                                .padding(.horizontal, 16)
-                                .background(AppColors.card)
-                                .clipShape(RoundedRectangle(cornerRadius: 8))
-                                .overlay(
-                                    RoundedRectangle(cornerRadius: 8)
-                                        .stroke(AppColors.border.opacity(0.5), lineWidth: 1)
-                                )
+                        if store.entries.isEmpty {
+                            EmptyStateView(
+                                icon: "sparkles",
+                                title: "No memories yet",
+                                description: "Start by logging your first experience. It only takes a minute.",
+                                actionLabel: "Log your first experience",
+                                action: { showLogSheet = true }
+                            )
                         } else {
                             VStack(spacing: 12) {
                                 ForEach(recentToShow) { entry in
@@ -92,6 +87,57 @@ struct HomeView: View {
                 LogExperienceView(store: store)
             }
         }
+    }
+}
+
+// MARK: - Empty State (recall-resolve style)
+
+struct EmptyStateView: View {
+    let icon: String
+    let title: String
+    let description: String
+    var actionLabel: String? = nil
+    var action: (() -> Void)? = nil
+
+    var body: some View {
+        VStack(spacing: 0) {
+            Circle()
+                .fill(AppColors.muted)
+                .frame(width: 64, height: 64)
+                .overlay(
+                    Image(systemName: icon)
+                        .font(.system(size: 32))
+                        .foregroundStyle(AppColors.mutedForeground)
+                )
+                .padding(.bottom, 16)
+
+            Text(title)
+                .font(.system(size: 18, weight: .medium, design: .serif))
+                .foregroundStyle(AppColors.foreground)
+                .padding(.bottom, 8)
+
+            Text(description)
+                .font(.system(size: 14))
+                .foregroundStyle(AppColors.mutedForeground)
+                .multilineTextAlignment(.center)
+                .frame(maxWidth: 280)
+                .padding(.bottom, 24)
+
+            if let actionLabel = actionLabel, let action = action {
+                Button(action: action) {
+                    Text(actionLabel)
+                        .font(.system(size: 14, weight: .medium))
+                        .foregroundStyle(AppColors.primaryForeground)
+                        .padding(.horizontal, 16)
+                        .padding(.vertical, 10)
+                        .background(AppColors.primary)
+                        .clipShape(RoundedRectangle(cornerRadius: 8))
+                }
+            }
+        }
+        .padding(.vertical, 64)
+        .padding(.horizontal, 24)
+        .frame(maxWidth: .infinity)
     }
 }
 
@@ -183,7 +229,7 @@ struct EntryCardView: View {
                     Text(entry.action)
                         .font(.system(size: compact ? 14 : 16, weight: .medium))
                         .foregroundStyle(AppColors.foreground)
-                        .lineLimit(1)
+                        .lineLimit(compact ? 1 : 2)
                         .truncationMode(.tail)
                 }
                 .padding(.bottom, 4)
@@ -286,6 +332,11 @@ struct LogExperienceView: View {
 }
 
 #Preview("Home") {
+    HomeView()
+        .environment(EntryStore.preview)
+}
+
+#Preview("Home empty") {
     HomeView()
         .environment(EntryStore())
 }
