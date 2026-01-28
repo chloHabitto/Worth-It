@@ -23,68 +23,70 @@ struct MainTabView: View {
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity)
 
-            // Custom tab bar: bg-card/80 backdrop-blur-lg border-t border-border/50
-            // Background extends into safe area (no grey gap); content stays above home indicator
-            VStack(spacing: 0) {
-                Rectangle()
-                    .fill(AppColors.border.opacity(0.5))
-                    .frame(height: 0.5)
-
-                HStack(spacing: 0) {
-                    TabButton(
-                        icon: "house",
-                        iconFilled: "house.fill",
-                        label: "Home",
-                        isSelected: selectedTab == 0
-                    ) { selectedTab = 0 }
-
-                    TabButton(
-                        icon: "magnifyingglass",
-                        iconFilled: "magnifyingglass",
-                        label: "Search",
-                        isSelected: selectedTab == 1
-                    ) { selectedTab = 1 }
-
-                    Button(action: { showLogSheet = true }) {
-                        Circle()
-                            .fill(AppColors.primary)
-                            .frame(width: 56, height: 56)
-                            .overlay(
-                                Image(systemName: "plus")
-                                    .font(.system(size: 24, weight: .medium))
-                                    .foregroundStyle(AppColors.primaryForeground)
-                            )
-                            .shadow(color: AppColors.primary.opacity(0.15), radius: 20, x: 0, y: 0)
-                    }
-                    .offset(y: -32)
-
-                    TabButton(
-                        icon: "chart.bar",
-                        iconFilled: "chart.bar.fill",
-                        label: "Library",
-                        isSelected: selectedTab == 2
-                    ) { selectedTab = 2 }
-
-                    TabButton(
-                        icon: "person",
-                        iconFilled: "person.fill",
-                        label: "Account",
-                        isSelected: selectedTab == 3
-                    ) { selectedTab = 3 }
-                }
-                .padding(.horizontal, 16) // px-4
-                .padding(.vertical, 8)    // py-2
-            }
-            .background(
-                AppColors.card.opacity(0.8)
-                    .background(.ultraThinMaterial)
-                    .ignoresSafeArea(edges: .bottom)
-            )
+            tabBar
         }
         .ignoresSafeArea(.keyboard)
         .sheet(isPresented: $showLogSheet) {
             LogExperienceView(store: store)
         }
+    }
+
+    // bg-card/80, border-t border-border/50. Only background extends into safe area.
+    private var tabBar: some View {
+        VStack(spacing: 0) {
+            Rectangle()
+                .fill(AppColors.border.opacity(0.5))
+                .frame(height: 0.5)
+
+            HStack(spacing: 0) {
+                TabButton(
+                    icon: "house",
+                    iconFilled: "house.fill",
+                    label: "Home",
+                    isSelected: selectedTab == 0
+                ) { selectedTab = 0 }
+
+                TabButton(
+                    icon: "magnifyingglass",
+                    iconFilled: "magnifyingglass",
+                    label: "Search",
+                    isSelected: selectedTab == 1
+                ) { selectedTab = 1 }
+
+                Button(action: { showLogSheet = true }) {
+                    Circle()
+                        .fill(AppColors.primary)
+                        .frame(width: 56, height: 56)
+                        .overlay(
+                            Image(systemName: "plus")
+                                .font(.system(size: 24, weight: .medium))
+                                .foregroundStyle(AppColors.primaryForeground)
+                        )
+                        .shadow(color: AppColors.primary.opacity(0.15), radius: 20, x: 0, y: 0)
+                }
+                .offset(y: -32)
+
+                TabButton(
+                    icon: "chart.bar",
+                    iconFilled: "chart.bar.fill",
+                    label: "Library",
+                    isSelected: selectedTab == 2
+                ) { selectedTab = 2 }
+
+                TabButton(
+                    icon: "person",
+                    iconFilled: "person.fill",
+                    label: "Account",
+                    isSelected: selectedTab == 3
+                ) { selectedTab = 3 }
+            }
+            .padding(.horizontal, 16) // px-4
+            .padding(.vertical, 8)    // py-2
+        }
+        .background(
+            AppColors.card.opacity(0.8)
+                .ignoresSafeArea(edges: .bottom)
+        )
     }
 }
 
