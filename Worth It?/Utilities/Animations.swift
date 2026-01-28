@@ -127,11 +127,9 @@ struct InteractiveScaleModifier: ViewModifier {
         content
             .scaleEffect(isPressed ? pressedScale : 1.0)
             .animation(AppAnimations.fast, value: isPressed)
-            .simultaneousGesture(
-                DragGesture(minimumDistance: 0)
-                    .onChanged { _ in isPressed = true }
-                    .onEnded { _ in isPressed = false }
-            )
+            .onLongPressGesture(minimumDuration: 0, maximumDistance: 10, pressing: { pressing in
+                isPressed = pressing
+            }, perform: {})
     }
 }
 

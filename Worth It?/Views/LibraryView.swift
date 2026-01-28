@@ -9,6 +9,7 @@ struct LibraryView: View {
     @Environment(EntryStore.self) private var store
     @State private var selectedCategory: EntryCategory? = nil
     @State private var showLogSheet = false
+    @State private var selectedEntry: Entry? = nil
 
     private var filteredEntries: [Entry] {
         guard let category = selectedCategory else {
@@ -65,9 +66,11 @@ struct LibraryView: View {
                                 .fadeIn(delay: 0.1)
 
                             ForEach(Array(filteredEntries.enumerated()), id: \.element.id) { index, entry in
-                                NavigationLink(value: entry) {
+                                Button {
+                                    selectedEntry = entry
+                                } label: {
                                     EntryCardView(entry: entry)
-                                        .interactiveScale()
+                                        .contentShape(Rectangle())
                                 }
                                 .buttonStyle(.plain)
                                 .transition(.asymmetric(insertion: .slideUp, removal: .scaleOut))
@@ -93,7 +96,7 @@ struct LibraryView: View {
             .scrollIndicators(.hidden)
             .background(AppColors.background.ignoresSafeArea())
             .toolbar(.hidden, for: .navigationBar)
-            .navigationDestination(for: Entry.self) { entry in
+            .navigationDestination(item: $selectedEntry) { entry in
                 EntryDetailView(entry: entry, onDelete: { store.delete(entry) }, onUpdate: { store.update(updated: $0) })
             }
             .sheet(isPresented: $showLogSheet) {

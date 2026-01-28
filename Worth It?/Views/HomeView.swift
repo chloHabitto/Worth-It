@@ -9,6 +9,7 @@ struct HomeView: View {
     @Environment(EntryStore.self) private var store
     @State private var searchText = ""
     @State private var showLogSheet = false
+    @State private var selectedEntry: Entry? = nil
 
     private var filteredEntries: [Entry] {
         store.entries(matching: searchText)
@@ -69,10 +70,11 @@ struct HomeView: View {
                         } else {
                             VStack(spacing: 12) {
                                 ForEach(Array(recentToShow.enumerated()), id: \.element.id) { index, entry in
-                                    NavigationLink(value: entry) {
+                                    Button {
+                                        selectedEntry = entry
+                                    } label: {
                                         EntryCardView(entry: entry, compact: true)
                                             .contentShape(Rectangle())
-                                            .interactiveScale()
                                     }
                                     .buttonStyle(.plain)
                                     .staggeredAppear(index: index, baseDelay: 0.3)
@@ -88,7 +90,7 @@ struct HomeView: View {
             .background(AppColors.background.ignoresSafeArea())
             .navigationBarTitleDisplayMode(.inline)
             .toolbar(.hidden, for: .navigationBar)
-            .navigationDestination(for: Entry.self) { entry in
+            .navigationDestination(item: $selectedEntry) { entry in
                 EntryDetailView(entry: entry, onDelete: { store.delete(entry) }, onUpdate: { store.update(updated: $0) })
             }
             .sheet(isPresented: $showLogSheet) {

@@ -9,6 +9,7 @@ struct SearchView: View {
     @Environment(EntryStore.self) private var store
     @State private var query: String = ""
     @State private var selectedEntry: Entry? = nil
+    @State private var entryForDetail: Entry? = nil
 
     private var results: [Entry] {
         store.entries(matching: query)
@@ -27,7 +28,7 @@ struct SearchView: View {
             .scrollIndicators(.hidden)
             .background(AppColors.background.ignoresSafeArea())
             .toolbar(.hidden, for: .navigationBar)
-            .navigationDestination(for: Entry.self) { entry in
+            .navigationDestination(item: $entryForDetail) { entry in
                 EntryDetailView(entry: entry, onDelete: { store.delete(entry) }, onUpdate: { store.update(updated: $0) })
             }
         }
@@ -110,10 +111,10 @@ struct SearchView: View {
 
             ForEach(Array(results.enumerated()), id: \.element.id) { index, entry in
                 Button {
-                    selectedEntry = entry
+                    entryForDetail = entry
                 } label: {
                     EntryCardView(entry: entry, compact: false)
-                        .interactiveScale()
+                        .contentShape(Rectangle())
                 }
                 .buttonStyle(.plain)
                 .staggeredAppear(index: index, baseDelay: 0, delayPerItem: 0.05)
