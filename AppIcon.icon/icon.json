@@ -1,0 +1,75 @@
+{
+  "fill" : {
+    "solid" : "srgb:0.98550,1.00000,0.95812,1.00000"
+  },
+  "groups" : [
+    {
+      "blur-material" : null,
+      "layers" : [
+        {
+          "hidden" : true,
+          "image-name" : "fi_16002020 2.png",
+          "name" : "fi_16002020 2",
+          "position" : {
+            "scale" : 1,
+            "translation-in-points" : [
+              0,
+              2.8125
+            ]
+          }
+        },
+        {
+          "blend-mode" : "normal",
+          "hidden" : true,
+          "image-name" : "fi_16002020.svg",
+          "name" : "fi_16002020",
+          "position" : {
+            "scale" : 1.75,
+            "translation-in-points" : [
+              -0.00043749999997544364,
+              0
+            ]
+          }
+        },
+        {
+          "hidden" : true,
+          "image-name" : "fi_16002020.png",
+          "name" : "fi_16002020",
+          "position" : {
+            "scale" : 4.02,
+            "translation-in-points" : [
+              0,
+              0
+            ]
+          }
+        },
+        {
+          "image-name" : "Vector.svg",
+          "name" : "Vector",
+          "position" : {
+            "scale" : 1.08,
+            "translation-in-points" : [
+              0.33749999999997726,
+              0.26999999999992497
+            ]
+          }
+        }
+      ],
+      "shadow" : {
+        "kind" : "neutral",
+        "opacity" : 1
+      },
+      "specular" : true,
+      "translucency" : {
+        "enabled" : false,
+        "value" : 0
+      }
+    }
+  ],
+  "supported-platforms" : {
+    "circles" : [
+      "watchOS"
+    ],
+    "squares" : "shared"
+  }
+}
