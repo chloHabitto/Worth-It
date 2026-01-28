@@ -80,7 +80,6 @@ struct AccountView: View {
             .background(AppColors.background.ignoresSafeArea())
             .navigationBarTitleDisplayMode(.inline)
             .toolbar(.hidden, for: .navigationBar)
-            .preferredColorScheme(selectedTheme.colorScheme)
         }
         .alert("Clear all memories?", isPresented: $showClearDataAlert) {
             Button("Cancel", role: .cancel) {}
