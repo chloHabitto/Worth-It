@@ -5,102 +5,130 @@
 
 import SwiftUI
 
-// MARK: - Exact Color Translations from CSS HSL (Tailwind → SwiftUI)
+// MARK: - AppColors (Converted from CSS HSL to RGB)
+// CSS HSL uses Lightness; SwiftUI Color(hue:saturation:brightness:) uses HSB Brightness — they differ.
+// Using RGB for exact, unambiguous colors.
 
 struct AppColors {
-    // --background: 40 33% 98%
-    static let background = Color(hue: 40/360, saturation: 0.33, brightness: 0.98)
+    // --background: hsl(40, 33%, 98%) → rgb(253, 251, 247)
+    static let background = Color(red: 253/255, green: 251/255, blue: 247/255)
 
-    // --foreground: 25 30% 15%
-    static let foreground = Color(hue: 25/360, saturation: 0.30, brightness: 0.15)
+    // --foreground: hsl(25, 30%, 15%) → rgb(50, 39, 27)
+    static let foreground = Color(red: 50/255, green: 39/255, blue: 27/255)
 
-    // --card: 40 40% 99%
-    static let card = Color(hue: 40/360, saturation: 0.40, brightness: 0.99)
+    // --card: hsl(40, 40%, 99%) → rgb(254, 253, 250)
+    static let card = Color(red: 254/255, green: 253/255, blue: 250/255)
 
-    // --primary: 12 76% 61% (Warm coral)
-    static let primary = Color(hue: 12/360, saturation: 0.76, brightness: 0.61)
+    // --card-foreground: same as foreground
+    static let cardForeground = foreground
 
-    // --primary-foreground: 40 33% 99%
-    static let primaryForeground = Color(hue: 40/360, saturation: 0.33, brightness: 0.99)
+    // --primary: hsl(12, 76%, 61%) → rgb(223, 115, 86) - Warm coral
+    static let primary = Color(red: 223/255, green: 115/255, blue: 86/255)
 
-    // --secondary: 145 20% 92% (Soft sage green for "yes")
-    static let secondary = Color(hue: 145/360, saturation: 0.20, brightness: 0.92)
+    // --primary-foreground: hsl(40, 33%, 99%) → rgb(254, 253, 251)
+    static let primaryForeground = Color(red: 254/255, green: 253/255, blue: 251/255)
 
-    // --secondary-foreground: 145 25% 25%
-    static let secondaryForeground = Color(hue: 145/360, saturation: 0.25, brightness: 0.25)
+    // --secondary: hsl(145, 20%, 92%) → rgb(227, 240, 232) - Soft sage green
+    static let secondary = Color(red: 227/255, green: 240/255, blue: 232/255)
 
-    // --muted: 35 20% 93%
-    static let muted = Color(hue: 35/360, saturation: 0.20, brightness: 0.93)
+    // --secondary-foreground: hsl(145, 25%, 25%) → rgb(48, 80, 60)
+    static let secondaryForeground = Color(red: 48/255, green: 80/255, blue: 60/255)
 
-    // --muted-foreground: 25 15% 45%
-    static let mutedForeground = Color(hue: 25/360, saturation: 0.15, brightness: 0.45)
+    // --muted: hsl(35, 20%, 93%) → rgb(242, 239, 233)
+    static let muted = Color(red: 242/255, green: 239/255, blue: 233/255)
 
-    // --accent: 35 90% 55% (Warm amber for "meh")
-    static let accent = Color(hue: 35/360, saturation: 0.90, brightness: 0.55)
+    // --muted-foreground: hsl(25, 15%, 45%) → rgb(132, 119, 98)
+    static let mutedForeground = Color(red: 132/255, green: 119/255, blue: 98/255)
 
-    // --destructive: 0 72% 51% (Red for "no")
-    static let destructive = Color(hue: 0/360, saturation: 0.72, brightness: 0.51)
+    // --accent: hsl(35, 90%, 55%) → rgb(244, 173, 41) - Warm amber
+    static let accent = Color(red: 244/255, green: 173/255, blue: 41/255)
 
-    // --border: 35 25% 88%
-    static let border = Color(hue: 35/360, saturation: 0.25, brightness: 0.88)
+    // --accent-foreground: same as foreground
+    static let accentForeground = foreground
 
-    // Card foreground (same as foreground)
-    static let cardForeground = Color(hue: 25/360, saturation: 0.30, brightness: 0.15)
+    // --destructive: hsl(0, 72%, 51%) → rgb(223, 68, 37) - Red
+    static let destructive = Color(red: 223/255, green: 68/255, blue: 37/255)
 
-    // Rating colors (for PhysicalRating)
-    static let ratingFine = Color(hue: 145/360, saturation: 0.50, brightness: 0.45)
-    static let ratingMeh = Color(hue: 45/360, saturation: 0.80, brightness: 0.50)
-    static let ratingBad = Color(hue: 25/360, saturation: 0.80, brightness: 0.55)
-    static let ratingAwful = Color(hue: 0/360, saturation: 0.70, brightness: 0.50)
+    // --destructive-foreground: same as primaryForeground
+    static let destructiveForeground = primaryForeground
 
-    // Worth colors (legacy; badge uses secondary/accent/destructive)
-    static let worthYes = Color(hue: 145/360, saturation: 0.50, brightness: 0.45)
-    static let worthMeh = Color(hue: 45/360, saturation: 0.80, brightness: 0.50)
-    static let worthNo = Color(hue: 0/360, saturation: 0.70, brightness: 0.50)
+    // --border: hsl(35, 25%, 88%) → rgb(232, 225, 214)
+    static let border = Color(red: 232/255, green: 225/255, blue: 214/255)
+
+    // Rating colors
+    // --rating-fine: hsl(145, 50%, 45%) → rgb(57, 172, 103)
+    static let ratingFine = Color(red: 57/255, green: 172/255, blue: 103/255)
+
+    // --rating-meh: hsl(45, 80%, 50%) → rgb(230, 196, 26)
+    static let ratingMeh = Color(red: 230/255, green: 196/255, blue: 26/255)
+
+    // --rating-bad: hsl(25, 80%, 55%) → rgb(229, 138, 56)
+    static let ratingBad = Color(red: 229/255, green: 138/255, blue: 56/255)
+
+    // --rating-awful: hsl(0, 70%, 50%) → rgb(217, 38, 38)
+    static let ratingAwful = Color(red: 217/255, green: 38/255, blue: 38/255)
+
+    // Worth colors
+    static let worthYes = Color(red: 57/255, green: 172/255, blue: 103/255)
+    static let worthMeh = Color(red: 230/255, green: 196/255, blue: 26/255)
+    static let worthNo = Color(red: 217/255, green: 38/255, blue: 38/255)
 }
 
-// MARK: - Legacy aliases (WorthItColors / WorthItTheme for existing code)
-
+// MARK: - Backward compatibility alias
 typealias WorthItColors = AppColors
 
-enum WorthItTheme {
-    static let coral = AppColors.primary
-    static let background = AppColors.background
-    static let muted = AppColors.mutedForeground
-    static let surface = AppColors.card
-    static let coralTint = AppColors.primary.opacity(0.12)
+// MARK: - Shadows
+struct AppShadows {
+    static let soft = Color(red: 50/255, green: 39/255, blue: 27/255).opacity(0.08)
+    static let softRadius: CGFloat = 20
+    static let softY: CGFloat = 4
 
-    static let titleFont = Font.system(.title, design: .serif).weight(.medium)
-    static let title2Font = Font.system(.title2, design: .serif).weight(.medium)
-    static let headlineFont = Font.system(.headline, design: .serif)
-    static let bodyFont = Font.body
-    static let calloutFont = Font.callout
-    static let subheadlineFont = Font.subheadline
-    static let footnoteFont = Font.footnote
+    static let medium = Color(red: 50/255, green: 39/255, blue: 27/255).opacity(0.12)
+    static let mediumRadius: CGFloat = 30
+    static let mediumY: CGFloat = 8
 
-    static let cornerRadius: CGFloat = 12
-    static let cardShadowRadius: CGFloat = 20
-    static let cardShadowY: CGFloat = 4
-    static let cardShadowOpacity: Double = 0.08
+    static let glow = AppColors.primary.opacity(0.15)
+    static let glowRadius: CGFloat = 40
 }
 
-// MARK: - View modifiers
+// MARK: - Layout Constants
+struct AppLayout {
+    static let cornerRadius: CGFloat = 16
+    static let cardCornerRadius: CGFloat = 8
+    static let buttonCornerRadius: CGFloat = 12
+    static let badgeCornerRadius: CGFloat = 9999
 
-struct WorthItCardStyle: ViewModifier {
+    static let horizontalPadding: CGFloat = 24
+    static let cardPadding: CGFloat = 16
+    static let compactCardPadding: CGFloat = 12
+}
+
+// MARK: - Card Style Modifier
+struct AppCardStyle: ViewModifier {
     func body(content: Content) -> some View {
         content
             .background(AppColors.card)
-            .clipShape(RoundedRectangle(cornerRadius: 8))
+            .clipShape(RoundedRectangle(cornerRadius: AppLayout.cardCornerRadius))
             .overlay(
-                RoundedRectangle(cornerRadius: 8)
+                RoundedRectangle(cornerRadius: AppLayout.cardCornerRadius)
                     .stroke(AppColors.border.opacity(0.5), lineWidth: 1)
             )
-            .shadow(color: Color.black.opacity(0.08), radius: 20, x: 0, y: 4)
+            .shadow(
+                color: AppShadows.soft,
+                radius: AppShadows.softRadius,
+                x: 0,
+                y: AppShadows.softY
+            )
     }
 }
 
 extension View {
+    func appCard() -> some View {
+        modifier(AppCardStyle())
+    }
+
+    /// Backward compatibility: same as appCard()
     func worthItCard() -> some View {
-        modifier(WorthItCardStyle())
+        modifier(AppCardStyle())
     }
 }
