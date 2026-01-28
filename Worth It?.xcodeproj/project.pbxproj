@@ -6,6 +6,12 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXBuildFile section */
+		89B11CCC2F2A957400EC9370 /* AppIcon.icon in Resources */ = {isa = PBXBuildFile; fileRef = 89B11CCB2F2A957400EC9370 /* AppIcon.icon */; };
+		89B11CCD2F2A957400EC9370 /* AppIcon.icon in Resources */ = {isa = PBXBuildFile; fileRef = 89B11CCB2F2A957400EC9370 /* AppIcon.icon */; };
+		89B11CCE2F2A957400EC9370 /* AppIcon.icon in Resources */ = {isa = PBXBuildFile; fileRef = 89B11CCB2F2A957400EC9370 /* AppIcon.icon */; };
+/* End PBXBuildFile section */
+
 /* Begin PBXContainerItemProxy section */
 		899794452F2A2CDD003DDA8F /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
@@ -27,6 +33,7 @@
 		899794372F2A2CDB003DDA8F /* Worth It?.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Worth It?.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		899794442F2A2CDD003DDA8F /* Worth It?Tests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "Worth It?Tests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
 		8997944E2F2A2CDD003DDA8F /* Worth It?UITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "Worth It?UITests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
+		89B11CCB2F2A957400EC9370 /* AppIcon.icon */ = {isa = PBXFileReference; lastKnownFileType = folder.iconcomposer.icon; path = AppIcon.icon; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
@@ -79,6 +86,7 @@
 				899794472F2A2CDD003DDA8F /* Worth It?Tests */,
 				899794512F2A2CDD003DDA8F /* Worth It?UITests */,
 				899794382F2A2CDB003DDA8F /* Products */,
+				89B11CCB2F2A957400EC9370 /* AppIcon.icon */,
 			);
 			sourceTree = "<group>";
 		};
@@ -212,6 +220,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				89B11CCE2F2A957400EC9370 /* AppIcon.icon in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -219,6 +228,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				89B11CCD2F2A957400EC9370 /* AppIcon.icon in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -226,6 +236,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				89B11CCC2F2A957400EC9370 /* AppIcon.icon in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
