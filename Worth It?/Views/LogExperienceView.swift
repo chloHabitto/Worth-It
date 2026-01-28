@@ -32,32 +32,37 @@ struct FlowLayout: Layout {
     var spacing: CGFloat = 8
 
     func sizeThatFits(proposal: ProposedViewSize, subviews: Subviews, cache: inout ()) -> CGSize {
-        let width = proposal.width ?? .infinity
-        let result = computeFlow(width: width, subviews: subviews)
-        return result.size
+        let width = max(proposal.width ?? 300, 1)
+        let (size, _) = computeLayout(width: width, subviews: subviews)
+        return CGSize(width: max(size.width, 0), height: max(size.height, 0))
     }
 
     func placeSubviews(in bounds: CGRect, proposal: ProposedViewSize, subviews: Subviews, cache: inout ()) {
-        let width = bounds.width
-        let result = computeFlow(width: width, subviews: subviews)
-        for (index, point) in result.positions.enumerated() {
-            subviews[index].place(
-                at: CGPoint(x: bounds.minX + point.x, y: bounds.minY + point.y),
+        let width = max(bounds.width, 1)
+        let (_, positions) = computeLayout(width: width, subviews: subviews)
+        for (index, subview) in subviews.enumerated() {
+            guard index < positions.count else { continue }
+            subview.place(
+                at: CGPoint(x: bounds.minX + positions[index].x, y: bounds.minY + positions[index].y),
                 proposal: .unspecified
             )
         }
     }
 
-    private func computeFlow(width: CGFloat, subviews: Subviews) -> (size: CGSize, positions: [CGPoint]) {
+    private func computeLayout(width: CGFloat, subviews: Subviews) -> (CGSize, [CGPoint]) {
         var positions: [CGPoint] = []
         var x: CGFloat = 0
         var y: CGFloat = 0
         var rowHeight: CGFloat = 0
-        let maxWidth = width.isFinite ? width : .infinity
+        let maxWidth = width
 
         for subview in subviews {
             let size = subview.sizeThatFits(.unspecified)
-            let requiredWidth = size.width + (x > 0 ? spacing : 0)
+            guard size.width > 0, size.height > 0,
+                  size.width.isFinite, size.height.isFinite else {
+                positions.append(CGPoint(x: x, y: y))
+                continue
+            }
             if x + size.width > maxWidth && x > 0 {
                 x = 0
                 y += rowHeight + spacing
@@ -68,8 +73,9 @@ struct FlowLayout: Layout {
             rowHeight = max(rowHeight, size.height)
             x += size.width
         }
-        let totalHeight = y + rowHeight
-        return (CGSize(width: width, height: totalHeight), positions)
+        let totalHeight = max(y + rowHeight, 0)
+        let totalWidth = max(maxWidth, 0)
+        return (CGSize(width: totalWidth, height: totalHeight), positions)
     }
 }
 
@@ -148,16 +154,22 @@ struct LogExperienceView: View {
     @State private var action: String = ""
     @State private var category: EntryCategory = .other
     @State private var context: Set<TimeContext> = []
-    @State private var physicalRating: PhysicalRating = .meh
+    @State private var physicalRating: PhysicalRating? = nil
     @State private var selectedEmotionTags: Set<String> = []
-    @State private var worthIt: WorthIt = .meh
+    @State private var worthIt: WorthIt? = nil
     @State private var note: String = ""
 
     private var canProceed: Bool {
-        if step == 1 {
+        switch step {
+        case 1:
             return !action.trimmingCharacters(in: .whitespaces).isEmpty
+        case 3:
+            return physicalRating != nil
+        case 4:
+            return worthIt != nil
+        default:
+            return true
         }
-        return true
     }
 
     private static let quickPicks = [
@@ -206,6 +218,7 @@ struct LogExperienceView: View {
                         isNoteFieldFocused = false
                     }
                     .fontWeight(.semibold)
+                    .foregroundStyle(AppColors.primary)
                 }
             }
         }
@@ -391,8 +404,8 @@ struct LogExperienceView: View {
                         option: option,
                         isSelected: worthIt == option,
                         action: { withAnimation(.easeInOut(duration: 0.2)) { worthIt = option } },
-                        foreground: worthItForeground(option),
-                        background: worthItBackground(option)
+                        foreground: worthItForeground(for: option, isSelected: worthIt == option),
+                        background: worthItBackground(for: option, isSelected: worthIt == option)
                     )
                 }
             }
@@ -425,8 +438,8 @@ struct LogExperienceView: View {
         }
     }
 
-    private func worthItBackground(_ option: WorthIt) -> Color {
-        guard worthIt == option else { return AppColors.muted }
+    private func worthItBackground(for option: WorthIt, isSelected: Bool) -> Color {
+        guard isSelected else { return AppColors.muted }
         switch option {
         case .yes: return AppColors.secondary
         case .meh: return AppColors.accent.opacity(0.3)
@@ -434,8 +447,8 @@ struct LogExperienceView: View {
         }
     }
 
-    private func worthItForeground(_ option: WorthIt) -> Color {
-        guard worthIt == option else { return AppColors.foreground }
+    private func worthItForeground(for option: WorthIt, isSelected: Bool) -> Color {
+        guard isSelected else { return AppColors.foreground }
         switch option {
         case .yes: return AppColors.secondaryForeground
         case .meh: return AppColors.foreground
@@ -514,13 +527,15 @@ struct LogExperienceView: View {
     // MARK: Save
 
     private func saveEntry() {
+        guard let selectedRating = physicalRating,
+              let selectedWorth = worthIt else { return }
         let entry = Entry(
             action: action.trimmingCharacters(in: .whitespaces),
             category: category,
             context: Array(context),
-            physicalRating: physicalRating,
+            physicalRating: selectedRating,
             emotionalTags: Array(selectedEmotionTags),
-            worthIt: worthIt,
+            worthIt: selectedWorth,
             note: note.trimmingCharacters(in: .whitespacesAndNewlines)
         )
         store.add(entry)

@@ -66,8 +66,8 @@ struct MainTabView: View {
                 .offset(y: -32)
 
                 TabButton(
-                    icon: "chart.bar",
-                    iconFilled: "chart.bar.fill",
+                    icon: "books.vertical",
+                    iconFilled: "books.vertical.fill",
                     label: "Library",
                     isSelected: selectedTab == 2
                 ) { selectedTab = 2 }
@@ -114,42 +114,6 @@ struct TabButton: View {
         }
         .frame(maxWidth: .infinity)
         .buttonStyle(.plain)
-    }
-}
-
-struct SearchView: View {
-    var body: some View {
-        NavigationStack {
-            Text("Search")
-                .font(.system(size: 22, weight: .medium, design: .serif))
-            Spacer()
-        }
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .background(AppColors.background)
-    }
-}
-
-struct LibraryView: View {
-    var body: some View {
-        NavigationStack {
-            Text("Library")
-                .font(.system(size: 22, weight: .medium, design: .serif))
-            Spacer()
-        }
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .background(AppColors.background)
-    }
-}
-
-struct AccountView: View {
-    var body: some View {
-        NavigationStack {
-            Text("Account")
-                .font(.system(size: 22, weight: .medium, design: .serif))
-            Spacer()
-        }
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .background(AppColors.background)
     }
 }
 
