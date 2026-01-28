@@ -22,6 +22,7 @@ struct MainTabView: View {
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .safeAreaInset(edge: .bottom, spacing: 0) {
+            // ONLY the content - no ignoresSafeArea here
             VStack(spacing: 0) {
                 Rectangle()
                     .fill(AppColors.border.opacity(0.5))
@@ -43,7 +44,7 @@ struct MainTabView: View {
                             )
                             .shadow(color: AppColors.primary.opacity(0.15), radius: 20, x: 0, y: 0)
                     }
-                    .offset(y: -12)
+                    .alignmentGuide(.bottom) { d in d[.bottom] + 12 }
 
                     TabButton(icon: "books.vertical", iconFilled: "books.vertical.fill", label: "Library", isSelected: selectedTab == 2) { selectedTab = 2 }
 
@@ -52,10 +53,13 @@ struct MainTabView: View {
                 .padding(.horizontal, 16)
                 .padding(.vertical, 6)
             }
-            .background(
-                AppColors.card.opacity(0.8)
-                    .ignoresSafeArea(edges: .bottom)
-            )
+            .background(AppColors.card.opacity(0.8))
+        }
+        // Background that extends into safe area - SEPARATE from safeAreaInset content
+        .background(alignment: .bottom) {
+            AppColors.card.opacity(0.8)
+                .frame(height: 120)
+                .ignoresSafeArea(edges: .bottom)
         }
         .ignoresSafeArea(.keyboard)
         .sheet(isPresented: $showLogSheet) {
