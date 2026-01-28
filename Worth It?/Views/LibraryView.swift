@@ -137,5 +137,5 @@ struct FilterChip: View {
 
 #Preview("Library empty") {
     LibraryView()
-        .environment(EntryStore())
+        .environment(EntryStore.preview)
 }

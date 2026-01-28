@@ -323,5 +323,5 @@ struct WorthBadge: View {
 
 #Preview("Home empty") {
     HomeView()
-        .environment(EntryStore())
+        .environment(EntryStore.preview)
 }

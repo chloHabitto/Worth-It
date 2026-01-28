@@ -112,16 +112,15 @@ enum WorthIt: String, CaseIterable, Codable {
 
 @Model
 final class Entry {
-    // Using @Attribute for unique constraint on id
-    @Attribute(.unique) var id: UUID
-    var action: String
-    var categoryRaw: String
-    var contextRaw: [String]
-    var physicalRatingRaw: String
-    var emotionalTags: [String]
-    var worthItRaw: String
-    var note: String
-    var createdAt: Date
+    var id: UUID = UUID()
+    var action: String = ""
+    var categoryRaw: String = "other"
+    var contextRaw: [String] = []
+    var physicalRatingRaw: String = "meh"
+    var emotionalTags: [String] = []
+    var worthItRaw: String = "meh"
+    var note: String = ""
+    var createdAt: Date = Date()
 
     // MARK: - Computed Properties for Type-Safe Access
 
@@ -167,18 +166,6 @@ final class Entry {
         self.worthItRaw = worthIt.rawValue
         self.note = note
         self.createdAt = createdAt
-    }
-}
-
-// MARK: - Hashable Conformance
-
-extension Entry: Hashable {
-    static func == (lhs: Entry, rhs: Entry) -> Bool {
-        lhs.id == rhs.id
-    }
-
-    func hash(into hasher: inout Hasher) {
-        hasher.combine(id)
     }
 }
 

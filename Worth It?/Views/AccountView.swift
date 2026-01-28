@@ -307,12 +307,25 @@ struct AccountView: View {
         store.delete(ids: allIds)
     }
 
-    private func handleExportData() {
-        let encoder = JSONEncoder()
-        encoder.outputFormatting = [.prettyPrinted, .sortedKeys]
-        encoder.dateEncodingStrategy = .iso8601
+    private func exportEntries(_ entries: [Entry]) -> Data? {
+        let exportable = entries.map { entry in
+            [
+                "id": entry.id.uuidString,
+                "action": entry.action,
+                "category": entry.categoryRaw,
+                "context": entry.contextRaw,
+                "physicalRating": entry.physicalRatingRaw,
+                "emotionalTags": entry.emotionalTags,
+                "worthIt": entry.worthItRaw,
+                "note": entry.note,
+                "createdAt": ISO8601DateFormatter().string(from: entry.createdAt)
+            ] as [String: Any]
+        }
+        return try? JSONSerialization.data(withJSONObject: exportable, options: .prettyPrinted)
+    }
 
-        guard let data = try? encoder.encode(store.entries),
+    private func handleExportData() {
+        guard let data = exportEntries(store.entries),
               let jsonString = String(data: data, encoding: .utf8) else {
             return
         }

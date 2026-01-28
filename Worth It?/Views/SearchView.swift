@@ -277,7 +277,7 @@ struct DecisionMomentView: View {
 
 #Preview("Search - Empty") {
     SearchView()
-        .environment(EntryStore())
+        .environment(EntryStore.preview)
 }
 
 #Preview("Search - With Results") {
