@@ -35,7 +35,7 @@ struct MainTabView: View {
         VStack(spacing: 0) {
             Rectangle()
                 .fill(AppColors.border.opacity(0.5))
-                .frame(height: 0.5)
+                .frame(height: 1)
 
             HStack(spacing: 0) {
                 TabButton(
@@ -82,7 +82,10 @@ struct MainTabView: View {
             .padding(.horizontal, 16) // px-4
             .padding(.vertical, 8)    // py-2
         }
-        .background(AppColors.card.opacity(0.8))
+        .background(
+            AppColors.card.opacity(0.8)
+                .ignoresSafeArea(edges: .bottom)
+        )
     }
 }
 

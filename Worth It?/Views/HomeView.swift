@@ -299,38 +299,6 @@ struct WorthBadge: View {
     }
 }
 
-// MARK: - Log Experience (placeholder)
-
-struct LogExperienceView: View {
-    @Environment(\.dismiss) private var dismiss
-    let store: EntryStore
-
-    var body: some View {
-        NavigationStack {
-            VStack {
-                Text("Log experience")
-                    .font(.system(size: 22, weight: .medium, design: .serif))
-                Text("4-step flow placeholder — to be built next.")
-                    .font(.body)
-                    .foregroundStyle(AppColors.mutedForeground)
-                Spacer()
-                Button("Done") { dismiss() }
-                    .font(.headline)
-                    .foregroundStyle(AppColors.primary)
-            }
-            .padding()
-            .frame(maxWidth: .infinity, maxHeight: .infinity)
-            .background(AppColors.background)
-            .toolbar {
-                ToolbarItem(placement: .cancellationAction) {
-                    Button("Cancel") { dismiss() }
-                        .foregroundStyle(AppColors.primary)
-                }
-            }
-        }
-    }
-}
-
 #Preview("Home") {
     HomeView()
         .environment(EntryStore.preview)
