@@ -76,12 +76,9 @@ struct MainTabView: View {
                 .padding(.vertical, 8)    // py-2
             }
             .background(
-                ZStack {
-                    AppColors.card.opacity(0.8)
-                    Rectangle()
-                        .fill(.ultraThinMaterial)
-                }
-                .ignoresSafeArea(edges: .bottom)
+                AppColors.card.opacity(0.8)
+                    .background(.ultraThinMaterial)
+                    .ignoresSafeArea(edges: .bottom)
             )
         }
         .ignoresSafeArea(.keyboard)
@@ -115,6 +112,7 @@ struct TabButton: View {
             .padding(.horizontal, 12)
         }
         .frame(maxWidth: .infinity)
+        .buttonStyle(.plain)
     }
 }
 
