@@ -51,7 +51,12 @@ struct MainTabView: View {
                 }
                 .frame(maxWidth: .infinity)
                 .padding(.bottom, geometry.safeAreaInsets.bottom + 8) // Extra 8pt for easier tapping
-                .background(AppColors.card.opacity(0.8)) // Background AFTER padding so it fills safe area
+                .background(
+                    ZStack {
+                        AppColors.background // Solid base layer
+                        AppColors.card.opacity(0.8) // Semi-transparent card on top
+                    }
+                ) // Background AFTER padding so it fills safe area
 
                 // FAB button - positioned separately
                 Button(action: { showLogSheet = true }) {
