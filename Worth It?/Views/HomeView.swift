@@ -36,22 +36,26 @@ struct HomeView: View {
                     .padding(.horizontal, 24)
                     .padding(.top, 48)
                     .padding(.bottom, 24)
+                    .pageEntrance(delay: 0, offsetY: -10)
 
                     // SEARCH: px-6 mb-8
                     SearchBarView(text: $searchText)
                         .padding(.horizontal, 24)
                         .padding(.bottom, 32)
+                        .pageEntrance(delay: 0.1, offsetY: 10)
 
                     // LOG BUTTON: px-6 mb-8
                     LogExperienceButton(action: { showLogSheet = true })
                         .padding(.horizontal, 24)
                         .padding(.bottom, 32)
+                        .pageEntrance(delay: 0.2, offsetY: 10)
 
                     // RECENT SECTION: px-6 flex-1
                     VStack(alignment: .leading, spacing: 16) {
                         Text("Recent memories")
                             .font(.system(size: 18, weight: .medium, design: .serif))
                             .foregroundStyle(AppColors.foreground)
+                            .pageEntrance(delay: 0.3)
 
                         if store.entries.isEmpty {
                             EmptyStateView(
@@ -61,13 +65,17 @@ struct HomeView: View {
                                 actionLabel: "Log your first experience",
                                 action: { showLogSheet = true }
                             )
+                            .pageEntrance(delay: 0.4, offsetY: 20)
                         } else {
                             VStack(spacing: 12) {
-                                ForEach(recentToShow) { entry in
+                                ForEach(Array(recentToShow.enumerated()), id: \.element.id) { index, entry in
                                     NavigationLink(value: entry) {
                                         EntryCardView(entry: entry, compact: true)
+                                            .contentShape(Rectangle())
+                                            .interactiveScale()
                                     }
                                     .buttonStyle(.plain)
+                                    .staggeredAppear(index: index, baseDelay: 0.3)
                                 }
                             }
                         }
@@ -141,7 +149,7 @@ struct EmptyStateView: View {
     }
 }
 
-// MARK: - Search Bar (compact height, muted placeholder, focus shadow)
+// MARK: - Search Bar (compact height, muted placeholder, focus shadow, animated clear)
 
 struct SearchBarView: View {
     @Binding var text: String
@@ -158,6 +166,17 @@ struct SearchBarView: View {
                 .font(.system(size: 16))
                 .foregroundStyle(AppColors.foreground)
                 .focused($isFocused)
+
+            if !text.isEmpty {
+                Button {
+                    text = ""
+                } label: {
+                    Image(systemName: "xmark.circle.fill")
+                        .font(.system(size: 18))
+                        .foregroundStyle(AppColors.mutedForeground)
+                }
+                .transition(.scaleIn)
+            }
         }
         .padding(.horizontal, 16)
         .padding(.vertical, 14)
@@ -165,14 +184,11 @@ struct SearchBarView: View {
         .clipShape(RoundedRectangle(cornerRadius: 12))
         .overlay(
             RoundedRectangle(cornerRadius: 12)
-                .stroke(AppColors.border.opacity(0.5), lineWidth: 1)
+                .stroke(isFocused ? AppColors.primary.opacity(0.5) : AppColors.border.opacity(0.5), lineWidth: 1)
         )
-        .shadow(
-            color: isFocused ? AppShadows.medium : AppShadows.soft,
-            radius: isFocused ? AppShadows.mediumRadius : AppShadows.softRadius,
-            x: 0,
-            y: isFocused ? AppShadows.mediumY : AppShadows.softY
-        )
+        .shadow(color: Color.black.opacity(isFocused ? 0.08 : 0.04), radius: isFocused ? 12 : 8, x: 0, y: 4)
+        .animation(AppAnimations.fast, value: isFocused)
+        .animation(AppAnimations.fast, value: text.isEmpty)
     }
 }
 
@@ -261,6 +277,7 @@ struct EntryCardView: View {
                 .stroke(AppColors.border.opacity(0.5), lineWidth: 1)
         )
         .shadow(color: Color.black.opacity(0.08), radius: 20, x: 0, y: 4)
+        .contentShape(Rectangle())
     }
 }
 

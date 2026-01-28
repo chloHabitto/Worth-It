@@ -59,13 +59,18 @@ struct AccountView: View {
                         .padding(.horizontal, 24)
                         .padding(.top, 48)
                         .padding(.bottom, 24)
+                        .pageEntrance(delay: 0, offsetY: -10)
 
                     // Content
                     VStack(spacing: 20) {
                         profileCard
+                            .pageEntrance(delay: 0.05, offsetY: 10)
                         appearanceSection
+                            .pageEntrance(delay: 0.1, offsetY: 10)
                         dataSection
+                            .pageEntrance(delay: 0.15, offsetY: 10)
                         footer
+                            .fadeIn(delay: 0.2)
                     }
                     .padding(.horizontal, 24)
                 }
@@ -177,6 +182,7 @@ struct AccountView: View {
                     )
                 }
             }
+            .animation(.easeInOut(duration: 0.2), value: selectedTheme)
         }
         .padding(20)
         .background(AppColors.card)

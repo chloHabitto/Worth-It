@@ -191,7 +191,12 @@ struct LogExperienceView: View {
 
                 ScrollView {
                     VStack(alignment: .leading, spacing: LogFlowLayout.sectionSpacing) {
-                        stepContent
+                        Group {
+                            stepContent
+                        }
+                        .id(step)
+                        .transition(.slideFromRight)
+                        .animation(.easeInOut(duration: 0.25), value: step)
                     }
                     .padding(.horizontal, LogFlowLayout.horizontalPadding)
                     .padding(.bottom, 24)

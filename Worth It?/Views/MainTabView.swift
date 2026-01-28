@@ -4,6 +4,7 @@
 //
 
 import SwiftUI
+import UIKit
 
 struct MainTabView: View {
     @Environment(EntryStore.self) private var store
@@ -11,83 +12,63 @@ struct MainTabView: View {
     @State private var showLogSheet = false
 
     var body: some View {
-        Group {
-            switch selectedTab {
-            case 0: HomeView()
-            case 1: SearchView()
-            case 2: LibraryView()
-            case 3: AccountView()
-            default: HomeView()
+        ZStack(alignment: .bottom) {
+            // Main content
+            Group {
+                switch selectedTab {
+                case 0: HomeView()
+                case 1: SearchView()
+                case 2: LibraryView()
+                case 3: AccountView()
+                default: HomeView()
+                }
             }
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
+            .safeAreaPadding(.bottom, 70) // Space for tab bar
+
+            // Tab bar at bottom
+            VStack(spacing: 0) {
+                Rectangle()
+                    .fill(AppColors.border.opacity(0.5))
+                    .frame(height: 1)
+
+                HStack(spacing: 0) {
+                    TabButton(icon: "house", iconFilled: "house.fill", label: "Home", isSelected: selectedTab == 0) { selectedTab = 0 }
+
+                    TabButton(icon: "magnifyingglass", iconFilled: "magnifyingglass", label: "Search", isSelected: selectedTab == 1) { selectedTab = 1 }
+
+                    Button(action: { showLogSheet = true }) {
+                        Circle()
+                            .fill(AppColors.primary)
+                            .frame(width: 56, height: 56)
+                            .overlay(
+                                Image(systemName: "plus")
+                                    .font(.system(size: 24, weight: .medium))
+                                    .foregroundStyle(AppColors.primaryForeground)
+                            )
+                            .shadow(color: AppColors.primary.opacity(0.15), radius: 20, x: 0, y: 0)
+                    }
+                    .offset(y: -12)
+
+                    TabButton(icon: "books.vertical", iconFilled: "books.vertical.fill", label: "Library", isSelected: selectedTab == 2) { selectedTab = 2 }
+
+                    TabButton(icon: "person", iconFilled: "person.fill", label: "Account", isSelected: selectedTab == 3) { selectedTab = 3 }
+                }
+                .padding(.horizontal, 16)
+                .padding(.top, 8)
+                .padding(.bottom, 4)
+            }
+            .frame(maxWidth: .infinity)
+            .background(AppColors.card.opacity(0.8))
+            .padding(.bottom, UIApplication.shared.connectedScenes
+                .compactMap { $0 as? UIWindowScene }
+                .first?.windows.first?.safeAreaInsets.bottom ?? 0)
         }
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .safeAreaInset(edge: .bottom, spacing: 0) {
-            tabBar
-        }
+        .ignoresSafeArea(edges: .bottom)
         .ignoresSafeArea(.keyboard)
         .sheet(isPresented: $showLogSheet) {
             LogExperienceView(store: store)
         }
-    }
-
-    // bg-card/80, border-t border-border/50 (NO shadow on tab bar)
-    private var tabBar: some View {
-        VStack(spacing: 0) {
-            Rectangle()
-                .fill(AppColors.border.opacity(0.5))
-                .frame(height: 1)
-
-            HStack(spacing: 0) {
-                TabButton(
-                    icon: "house",
-                    iconFilled: "house.fill",
-                    label: "Home",
-                    isSelected: selectedTab == 0
-                ) { selectedTab = 0 }
-
-                TabButton(
-                    icon: "magnifyingglass",
-                    iconFilled: "magnifyingglass",
-                    label: "Search",
-                    isSelected: selectedTab == 1
-                ) { selectedTab = 1 }
-
-                Button(action: { showLogSheet = true }) {
-                    Circle()
-                        .fill(AppColors.primary)
-                        .frame(width: 56, height: 56)
-                        .overlay(
-                            Image(systemName: "plus")
-                                .font(.system(size: 24, weight: .medium))
-                                .foregroundStyle(AppColors.primaryForeground)
-                        )
-                        .shadow(color: AppColors.primary.opacity(0.15), radius: 20, x: 0, y: 0)
-                }
-                .offset(y: -32)
-
-                TabButton(
-                    icon: "books.vertical",
-                    iconFilled: "books.vertical.fill",
-                    label: "Library",
-                    isSelected: selectedTab == 2
-                ) { selectedTab = 2 }
-
-                TabButton(
-                    icon: "person",
-                    iconFilled: "person.fill",
-                    label: "Account",
-                    isSelected: selectedTab == 3
-                ) { selectedTab = 3 }
-            }
-            .padding(.horizontal, 16) // px-4
-            .padding(.vertical, 8)    // py-2
-        }
-        .fixedSize(horizontal: false, vertical: true)
-        .frame(maxWidth: .infinity)
-        .background(
-            AppColors.card.opacity(0.8)
-                .ignoresSafeArea(edges: .bottom)
-        )
     }
 }
 

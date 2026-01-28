@@ -48,6 +48,7 @@ struct SearchView: View {
             Text("Search memories")
                 .font(.system(size: 24, weight: .semibold, design: .serif))
                 .foregroundStyle(AppColors.foreground)
+                .pageEntrance(delay: 0, offsetY: -10)
 
             SearchBarView(text: $query, placeholder: "How did I feel after...")
         }
@@ -88,6 +89,7 @@ struct SearchView: View {
         }
         .frame(maxWidth: .infinity)
         .padding(.vertical, 48)
+        .fadeIn(delay: 0.1)
     }
 
     private var noResultsState: some View {
@@ -96,6 +98,7 @@ struct SearchView: View {
             title: "No matches",
             description: "No memories match '\(query)'."
         )
+        .pageEntrance(delay: 0.1, offsetY: 20)
     }
 
     private var hasResultsState: some View {
@@ -110,15 +113,14 @@ struct SearchView: View {
                     selectedEntry = entry
                 } label: {
                     EntryCardView(entry: entry, compact: false)
+                        .interactiveScale()
                 }
                 .buttonStyle(.plain)
-                .transition(.asymmetric(
-                    insertion: .opacity.combined(with: .offset(y: 10)),
-                    removal: .opacity
-                ))
-                .animation(.easeOut(duration: 0.2).delay(Double(index) * 0.05), value: results.count)
+                .staggeredAppear(index: index, baseDelay: 0, delayPerItem: 0.05)
             }
         }
+        .transition(.opacity)
+        .animation(.easeOut(duration: 0.2), value: results.count)
     }
 }
 
@@ -165,6 +167,7 @@ struct DecisionMomentView: View {
     var body: some View {
         ZStack {
             bgGradient.ignoresSafeArea()
+                .transition(.opacity)
 
             VStack(spacing: 0) {
                 HStack {
@@ -189,6 +192,7 @@ struct DecisionMomentView: View {
                 VStack(spacing: 24) {
                     Text(entry.physicalRating.emoji)
                         .font(.system(size: 64))
+                        .fadeIn(delay: 0.1)
 
                     HStack(spacing: 4) {
                         Text(entry.category.emoji)
@@ -198,11 +202,13 @@ struct DecisionMomentView: View {
                     }
                     .font(.system(size: 14))
                     .foregroundStyle(AppColors.mutedForeground)
+                    .fadeIn(delay: 0.2)
 
                     Text(entry.action)
                         .font(.system(size: 24, weight: .medium, design: .serif))
                         .foregroundStyle(AppColors.foreground)
                         .multilineTextAlignment(.center)
+                        .fadeIn(delay: 0.3)
 
                     HStack(spacing: 4) {
                         Text(entry.worthIt.emoji)
@@ -210,6 +216,7 @@ struct DecisionMomentView: View {
                     }
                     .font(.system(size: 20, weight: .medium))
                     .foregroundStyle(worthColor)
+                    .fadeIn(delay: 0.4)
 
                     if !entry.note.isEmpty {
                         Text("\"\(entry.note)\"")
@@ -218,6 +225,7 @@ struct DecisionMomentView: View {
                             .foregroundStyle(AppColors.mutedForeground)
                             .multilineTextAlignment(.center)
                             .padding(.horizontal, 24)
+                            .fadeIn(delay: 0.45)
                     }
                 }
                 .padding(.horizontal, 24)
@@ -257,6 +265,7 @@ struct DecisionMomentView: View {
                 }
                 .padding(.horizontal, 24)
                 .padding(.bottom, 48)
+                .pageEntrance(delay: 0.5, offsetY: 40)
             }
         }
         .presentationDetents([.large])

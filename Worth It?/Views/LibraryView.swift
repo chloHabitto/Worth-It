@@ -27,6 +27,7 @@ struct LibraryView: View {
                             .font(.system(size: 24, weight: .semibold, design: .serif))
                             .foregroundStyle(AppColors.foreground)
                             .padding(.horizontal, 24)
+                            .pageEntrance(delay: 0, offsetY: -10)
 
                         // Category filter (full-width scroll, content inset 24)
                         ScrollView(.horizontal, showsIndicators: false) {
@@ -49,6 +50,7 @@ struct LibraryView: View {
                             .padding(.horizontal, 24)
                         }
                         .padding(.bottom, 8)
+                        .pageEntrance(delay: 0.05, offsetY: 10)
                     }
                     .padding(.top, 48)
                     .padding(.bottom, 24)
@@ -60,13 +62,18 @@ struct LibraryView: View {
                                 .font(.system(size: 14))
                                 .foregroundStyle(AppColors.mutedForeground)
                                 .padding(.bottom, 4)
+                                .fadeIn(delay: 0.1)
 
-                            ForEach(filteredEntries) { entry in
+                            ForEach(Array(filteredEntries.enumerated()), id: \.element.id) { index, entry in
                                 NavigationLink(value: entry) {
                                     EntryCardView(entry: entry)
+                                        .interactiveScale()
                                 }
                                 .buttonStyle(.plain)
+                                .transition(.asymmetric(insertion: .slideUp, removal: .scaleOut))
+                                .staggeredAppear(index: index, baseDelay: 0.1, delayPerItem: 0.03)
                             }
+                            .animation(.easeOut(duration: 0.25), value: filteredEntries.count)
                         } else {
                             EmptyStateView(
                                 icon: selectedCategory == nil ? "books.vertical" : "tray",
