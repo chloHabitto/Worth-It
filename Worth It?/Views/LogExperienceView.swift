@@ -73,11 +73,76 @@ struct FlowLayout: Layout {
     }
 }
 
+// MARK: - Physical Rating Button (Step 3)
+
+private struct PhysicalRatingButton: View {
+    let rating: PhysicalRating
+    let isSelected: Bool
+    let action: () -> Void
+
+    var body: some View {
+        Button(action: action) {
+            VStack(spacing: 4) {
+                Text(rating.emoji)
+                    .font(.system(size: 32))
+                Text(rating.displayName)
+                    .font(.system(size: 14, weight: .medium))
+            }
+            .foregroundStyle(isSelected ? AppColors.primaryForeground : AppColors.foreground)
+            .frame(maxWidth: .infinity)
+            .padding(.vertical, 20)
+            .contentShape(Rectangle())
+            .background(isSelected ? AppColors.primary : AppColors.card)
+            .clipShape(RoundedRectangle(cornerRadius: LogFlowLayout.cardCornerRadius))
+            .overlay(
+                RoundedRectangle(cornerRadius: LogFlowLayout.cardCornerRadius)
+                    .stroke(isSelected ? AppColors.primary : AppColors.border, lineWidth: 1)
+            )
+        }
+        .buttonStyle(.plain)
+        .scaleEffect(isSelected ? 1.05 : 1.0)
+        .animation(.easeInOut(duration: 0.15), value: isSelected)
+    }
+}
+
+// MARK: - Worth It Button (Step 4)
+
+private struct WorthItButton: View {
+    let option: WorthIt
+    let isSelected: Bool
+    let action: () -> Void
+    let foreground: Color
+    let background: Color
+
+    var body: some View {
+        Button(action: action) {
+            VStack(spacing: 4) {
+                Text(option.emoji)
+                    .font(.system(size: 24))
+                Text(option.label)
+                    .font(.system(size: 14, weight: .medium))
+            }
+            .foregroundStyle(foreground)
+            .frame(maxWidth: .infinity)
+            .padding(.vertical, 14)
+            .contentShape(Rectangle())
+            .background(background)
+            .clipShape(RoundedRectangle(cornerRadius: LogFlowLayout.cardCornerRadius))
+        }
+        .buttonStyle(.plain)
+        .scaleEffect(isSelected ? 1.05 : 1.0)
+        .animation(.easeInOut(duration: 0.15), value: isSelected)
+    }
+}
+
 // MARK: - Log Experience View (4-step flow)
 
 struct LogExperienceView: View {
     @Environment(\.dismiss) private var dismiss
     let store: EntryStore
+
+    @FocusState private var isTextFieldFocused: Bool
+    @FocusState private var isNoteFieldFocused: Bool
 
     @State private var step: Int = 1
     @State private var action: String = ""
@@ -128,10 +193,19 @@ struct LogExperienceView: View {
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity)
             .background(AppColors.background)
+            .ignoresSafeArea(.keyboard)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
                     Button("Cancel") { dismiss() }
                         .foregroundStyle(AppColors.primary)
+                }
+                ToolbarItemGroup(placement: .keyboard) {
+                    Spacer()
+                    Button("Done") {
+                        isTextFieldFocused = false
+                        isNoteFieldFocused = false
+                    }
+                    .fontWeight(.semibold)
                 }
             }
         }
@@ -169,15 +243,18 @@ struct LogExperienceView: View {
 
             TextField("", text: $action, prompt: Text("e.g., ate spicy ramen at midnight").foregroundStyle(AppColors.mutedForeground))
                 .textFieldStyle(.plain)
-                .font(.system(size: 16))
+                .font(.system(size: 18))
                 .foregroundStyle(AppColors.foreground)
-                .padding(LogFlowLayout.itemSpacing)
+                .padding(16)
                 .background(AppColors.card)
-                .clipShape(RoundedRectangle(cornerRadius: LogFlowLayout.buttonCornerRadius))
+                .clipShape(RoundedRectangle(cornerRadius: LogFlowLayout.cardCornerRadius))
                 .overlay(
-                    RoundedRectangle(cornerRadius: LogFlowLayout.buttonCornerRadius)
-                        .stroke(AppColors.border.opacity(0.5), lineWidth: 1)
+                    RoundedRectangle(cornerRadius: LogFlowLayout.cardCornerRadius)
+                        .stroke(AppColors.border, lineWidth: 1)
                 )
+                .focused($isTextFieldFocused)
+                .submitLabel(.done)
+                .onSubmit { isTextFieldFocused = false }
 
             VStack(alignment: .leading, spacing: LogFlowLayout.itemSpacing) {
                 sectionLabel("Quick picks")
@@ -191,7 +268,9 @@ struct LogExperienceView: View {
                                 .foregroundStyle(action == pick ? AppColors.primaryForeground : AppColors.foreground)
                                 .padding(.horizontal, 14)
                                 .padding(.vertical, 8)
+                                .contentShape(Rectangle())
                         }
+                        .buttonStyle(.plain)
                         .background(action == pick ? AppColors.primary : AppColors.muted)
                         .clipShape(Capsule())
                     }
@@ -213,7 +292,9 @@ struct LogExperienceView: View {
                             .foregroundStyle(category == cat ? AppColors.primaryForeground : AppColors.foreground)
                             .padding(.horizontal, 12)
                             .padding(.vertical, 8)
+                            .contentShape(Rectangle())
                         }
+                        .buttonStyle(.plain)
                         .background(category == cat ? AppColors.primary : AppColors.muted)
                         .clipShape(RoundedRectangle(cornerRadius: LogFlowLayout.cardCornerRadius))
                     }
@@ -244,7 +325,9 @@ struct LogExperienceView: View {
                             .foregroundStyle(isSelected ? AppColors.primaryForeground : AppColors.foreground)
                             .frame(maxWidth: .infinity)
                             .padding(.vertical, 14)
+                            .contentShape(Rectangle())
                     }
+                    .buttonStyle(.plain)
                     .background(isSelected ? AppColors.primary : AppColors.muted)
                     .clipShape(RoundedRectangle(cornerRadius: LogFlowLayout.cardCornerRadius))
                 }
@@ -259,24 +342,11 @@ struct LogExperienceView: View {
 
             LazyVGrid(columns: [GridItem(.flexible(), spacing: LogFlowLayout.itemSpacing), GridItem(.flexible(), spacing: LogFlowLayout.itemSpacing)], spacing: LogFlowLayout.itemSpacing) {
                 ForEach(PhysicalRating.allCases, id: \.self) { rating in
-                    let isSelected = physicalRating == rating
-                    Button {
-                        withAnimation(.easeInOut(duration: 0.15)) { physicalRating = rating }
-                    } label: {
-                        VStack(spacing: 8) {
-                            Text(rating.emoji)
-                                .font(LogFlowTypography.ratingEmoji)
-                            Text(rating.displayName)
-                                .font(LogFlowTypography.chip)
-                                .foregroundStyle(AppColors.foreground)
-                        }
-                        .frame(maxWidth: .infinity)
-                        .padding(.vertical, 16)
-                        .scaleEffect(isSelected ? 1.05 : 1.0)
-                        .animation(.easeInOut(duration: 0.15), value: isSelected)
-                    }
-                    .background(AppColors.muted)
-                    .clipShape(RoundedRectangle(cornerRadius: LogFlowLayout.cardCornerRadius))
+                    PhysicalRatingButton(
+                        rating: rating,
+                        isSelected: physicalRating == rating,
+                        action: { withAnimation(.easeInOut(duration: 0.15)) { physicalRating = rating } }
+                    )
                 }
             }
 
@@ -299,7 +369,9 @@ struct LogExperienceView: View {
                                 .foregroundStyle(isSelected ? AppColors.secondaryForeground : AppColors.foreground)
                                 .padding(.horizontal, 14)
                                 .padding(.vertical, 8)
+                                .contentShape(Rectangle())
                         }
+                        .buttonStyle(.plain)
                         .background(isSelected ? AppColors.secondary : AppColors.muted)
                         .clipShape(Capsule())
                     }
@@ -315,24 +387,13 @@ struct LogExperienceView: View {
 
             HStack(spacing: LogFlowLayout.itemSpacing) {
                 ForEach(WorthIt.allCases, id: \.self) { option in
-                    let isSelected = worthIt == option
-                    Button {
-                        withAnimation(.easeInOut(duration: 0.2)) { worthIt = option }
-                    } label: {
-                        VStack(spacing: 4) {
-                            Text(option.emoji)
-                                .font(.system(size: 24))
-                            Text(option.label)
-                                .font(LogFlowTypography.chip)
-                        }
-                        .frame(maxWidth: .infinity)
-                        .padding(.vertical, 14)
-                        .scaleEffect(isSelected ? 1.05 : 1.0)
-                        .animation(.easeInOut(duration: 0.15), value: isSelected)
-                    }
-                    .foregroundStyle(worthItForeground(option))
-                    .background(worthItBackground(option))
-                    .clipShape(RoundedRectangle(cornerRadius: LogFlowLayout.cardCornerRadius))
+                    WorthItButton(
+                        option: option,
+                        isSelected: worthIt == option,
+                        action: { withAnimation(.easeInOut(duration: 0.2)) { worthIt = option } },
+                        foreground: worthItForeground(option),
+                        background: worthItBackground(option)
+                    )
                 }
             }
 
@@ -352,6 +413,7 @@ struct LogExperienceView: View {
                         .scrollContentBackground(.hidden)
                         .padding(8)
                         .frame(minHeight: 80)
+                        .focused($isNoteFieldFocused)
                 }
                 .background(AppColors.card)
                 .clipShape(RoundedRectangle(cornerRadius: LogFlowLayout.cardCornerRadius))
