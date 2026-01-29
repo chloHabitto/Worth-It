@@ -2,7 +2,8 @@
 //  LockScreenView.swift
 //  Worth It?
 //
-//  Translated from src/components/LockScreen.tsx
+//  Lock screen overlay. Uses AppColors (Theme/WorthItTheme.swift) and
+//  NumPadView (Views/Components/NumPadView.swift) from the same app target.
 //
 
 import SwiftUI
