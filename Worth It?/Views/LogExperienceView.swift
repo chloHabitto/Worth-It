@@ -222,11 +222,7 @@ struct LogExperienceView: View {
                         isNoteFieldFocused = false
                         isTextFieldFocused = false
                     }
-                    .foregroundStyle(AppColors.primaryForeground)
-                    .padding(.horizontal, 16)
-                    .padding(.vertical, 8)
-                    .background(AppColors.primary)
-                    .clipShape(RoundedRectangle(cornerRadius: LogFlowLayout.buttonCornerRadius))
+                    .tint(AppColors.primary)
                 }
             }
         }

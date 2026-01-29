@@ -111,8 +111,8 @@ struct HomeView: View {
             .listStyle(.plain)
             .scrollContentBackground(.hidden)
             .scrollIndicators(.hidden)
-            .background(AppColors.background.ignoresSafeArea())
             .padding(.bottom, 96)
+            .background(AppColors.background.ignoresSafeArea())
             .navigationBarTitleDisplayMode(.inline)
             .toolbar(.hidden, for: .navigationBar)
             .navigationDestination(item: $selectedEntry) { entry in

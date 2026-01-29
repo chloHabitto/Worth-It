@@ -130,11 +130,7 @@ struct EntryDetailView: View {
                         isEditActionFocused = false
                         isEditNoteFocused = false
                     }
-                    .foregroundStyle(AppColors.primaryForeground)
-                    .padding(.horizontal, 16)
-                    .padding(.vertical, 8)
-                    .background(AppColors.primary)
-                    .clipShape(Capsule())
+                    .tint(AppColors.primary)
                 }
             }
         }

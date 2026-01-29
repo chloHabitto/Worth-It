@@ -115,8 +115,8 @@ struct LibraryView: View {
             .listStyle(.plain)
             .scrollContentBackground(.hidden)
             .scrollIndicators(.hidden)
-            .background(AppColors.background.ignoresSafeArea())
             .padding(.bottom, 96)
+            .background(AppColors.background.ignoresSafeArea())
             .toolbar(.hidden, for: .navigationBar)
             .navigationDestination(item: $selectedEntry) { entry in
                 EntryDetailView(entry: entry, onDelete: { store.delete(entry) }, onUpdate: { store.update(updated: $0) })
