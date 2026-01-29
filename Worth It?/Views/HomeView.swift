@@ -168,6 +168,7 @@ struct SearchBarView: View {
                 .font(.system(size: 16))
                 .foregroundStyle(AppColors.foreground)
                 .focused($isFocused)
+                .submitLabel(.done)
 
             if !text.isEmpty {
                 Button {

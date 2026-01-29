@@ -45,6 +45,10 @@ struct AccountView: View {
     @Environment(EntryStore.self) private var store
     @AppStorage("appTheme") private var selectedTheme: AppTheme = .system
     @State private var showClearDataAlert = false
+    @State private var showContactSheet = false
+    @State private var showCopyConfirmation = false
+
+    private static let supportEmail = "support@worthit.app"
 
     private var entryCount: Int {
         store.entries.count
@@ -93,6 +97,18 @@ struct AccountView: View {
         } message: {
             Text("This will permanently delete all \(entryCount) logged \(entryCount == 1 ? "memory" : "memories"). This action cannot be undone.")
         }
+        .confirmationDialog("Contact Us", isPresented: $showContactSheet, titleVisibility: .visible) {
+            Button("Open in Mail App") {
+                openMailApp()
+            }
+            Button("Copy Email Address") {
+                copyEmailToClipboard()
+            }
+            Button("Cancel", role: .cancel) {}
+        } message: {
+            Text(Self.supportEmail)
+        }
+        .overlay(copyConfirmationOverlay)
     }
 
     // MARK: - Header
@@ -238,18 +254,23 @@ struct AccountView: View {
 
     private var supportSection: some View {
         SectionCard(title: "Support") {
-            SettingsRow(
-                icon: "questionmark.circle",
-                label: "Help / FAQ",
-                sublabel: "Get answers to common questions",
-                action: { /* TODO: Open help */ }
-            )
+            NavigationLink {
+                HelpView()
+            } label: {
+                SettingsRowLabel(
+                    icon: "questionmark.circle",
+                    label: "Help / FAQ",
+                    sublabel: "Get answers to common questions"
+                )
+            }
+            .buttonStyle(.plain)
 
             SettingsRow(
                 icon: "envelope",
                 label: "Contact Us",
                 sublabel: "Reach out to our team",
-                action: { /* TODO: Open contact */ }
+                isExternal: true,
+                action: { showContactSheet = true }
             )
 
             SettingsRow(
@@ -369,6 +390,48 @@ struct AccountView: View {
            let rootVC = windowScene.windows.first?.rootViewController {
             rootVC.present(activityVC, animated: true)
         }
+    }
+
+    private func openMailApp() {
+        if let url = URL(string: "mailto:\(Self.supportEmail)") {
+            UIApplication.shared.open(url)
+        }
+    }
+
+    private func copyEmailToClipboard() {
+        UIPasteboard.general.string = Self.supportEmail
+        UIImpactFeedbackGenerator(style: .medium).impactOccurred()
+        showCopyConfirmation = true
+        DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
+            showCopyConfirmation = false
+        }
+    }
+
+    @ViewBuilder
+    private var copyConfirmationOverlay: some View {
+        VStack {
+            Spacer()
+            if showCopyConfirmation {
+                Text("Email address copied to clipboard")
+                    .font(.system(size: 14, weight: .medium))
+                    .foregroundStyle(AppColors.foreground)
+                    .padding(.horizontal, 16)
+                    .padding(.vertical, 12)
+                    .background(AppColors.card)
+                    .clipShape(RoundedRectangle(cornerRadius: 12))
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 12)
+                            .stroke(AppColors.border.opacity(0.5), lineWidth: 1)
+                    )
+                    .shadow(color: AppShadows.soft, radius: AppShadows.softRadius, x: 0, y: AppShadows.softY)
+                    .padding(.horizontal, 24)
+                    .padding(.bottom, 100)
+                    .transition(.opacity.combined(with: .scale(scale: 0.95)))
+            }
+        }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .animation(.easeInOut(duration: 0.2), value: showCopyConfirmation)
+        .allowsHitTesting(false)
     }
 }
 
@@ -498,6 +561,48 @@ struct ThemeButton: View {
         }
         .buttonStyle(.plain)
         .animation(.easeInOut(duration: 0.2), value: isSelected)
+    }
+}
+
+// MARK: - Settings Row Label (for NavigationLink compatibility)
+
+struct SettingsRowLabel: View {
+    let icon: String
+    let label: String
+    var sublabel: String? = nil
+
+    var body: some View {
+        HStack(spacing: 12) {
+            Image(systemName: icon)
+                .font(.system(size: 20))
+                .foregroundStyle(AppColors.foreground)
+                .frame(width: 24)
+
+            VStack(alignment: .leading, spacing: 2) {
+                Text(label)
+                    .font(.system(size: 16, weight: .medium))
+                    .foregroundStyle(AppColors.foreground)
+
+                if let sublabel = sublabel {
+                    Text(sublabel)
+                        .font(.system(size: 12))
+                        .foregroundStyle(AppColors.mutedForeground)
+                }
+            }
+
+            Spacer()
+
+            Image(systemName: "chevron.right")
+                .font(.system(size: 14, weight: .medium))
+                .foregroundStyle(AppColors.mutedForeground.opacity(0.5))
+        }
+        .padding(16)
+        .contentShape(Rectangle())
+        .overlay(
+            Divider()
+                .background(AppColors.border.opacity(0.5)),
+            alignment: .bottom
+        )
     }
 }
 

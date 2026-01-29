@@ -216,15 +216,6 @@ struct LogExperienceView: View {
                     Button("Cancel") { dismiss() }
                         .foregroundStyle(AppColors.primary)
                 }
-                ToolbarItemGroup(placement: .keyboard) {
-                    Spacer()
-                    Button("Done") {
-                        isTextFieldFocused = false
-                        isNoteFieldFocused = false
-                    }
-                    .fontWeight(.semibold)
-                    .foregroundStyle(AppColors.primary)
-                }
             }
         }
     }

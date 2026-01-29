@@ -74,7 +74,6 @@ struct MainTabView: View {
             }
         }
         .ignoresSafeArea(edges: .bottom)
-        .ignoresSafeArea(.keyboard)
         .sheet(isPresented: $showLogSheet) {
             LogExperienceView(store: store)
         }
