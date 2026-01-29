@@ -367,11 +367,12 @@ struct AccountView: View {
 
     private var footer: some View {
         VStack(spacing: 4) {
-            Text("Worth It?")
+            Link("Website", destination: URL(string: "https://worthit.app")!)
                 .font(.system(size: 14, weight: .medium))
                 .foregroundStyle(AppColors.mutedForeground)
+                .underline()
 
-            Text("v1.0 · Made with 🧡")
+            Text("Made with 🧡")
                 .font(.system(size: 12))
                 .foregroundStyle(AppColors.mutedForeground.opacity(0.7))
         }
