@@ -71,6 +71,41 @@ final class EntryStore {
         save()
     }
 
+    // MARK: - Memo Operations
+
+    func addMemo(to entry: Entry, outcome: MemoOutcome, feeling: PhysicalRating, note: String) {
+        let memo = Memo(outcome: outcome, feeling: feeling, note: note)
+        memo.entry = entry
+        if entry.memos == nil {
+            entry.memos = []
+        }
+        entry.memos?.append(memo)
+        modelContext.insert(memo)
+        save()
+    }
+
+    func updateMemo(_ memo: Memo, outcome: MemoOutcome, feeling: PhysicalRating, note: String) {
+        memo.outcome = outcome
+        memo.feeling = feeling
+        memo.note = note
+        save()
+    }
+
+    func toggleMemoStar(_ memo: Memo) {
+        memo.isStarred.toggle()
+        save()
+    }
+
+    func toggleMemoHidden(_ memo: Memo) {
+        memo.isHidden.toggle()
+        save()
+    }
+
+    func deleteMemo(_ memo: Memo) {
+        modelContext.delete(memo)
+        save()
+    }
+
     // MARK: - Persistence
 
     private func save() {
@@ -86,7 +121,7 @@ final class EntryStore {
     @MainActor
     static var preview: EntryStore {
         let config = ModelConfiguration(isStoredInMemoryOnly: true)
-        let container = try! ModelContainer(for: Entry.self, configurations: config)
+        let container = try! ModelContainer(for: Entry.self, Memo.self, configurations: config)
         let store = EntryStore(modelContext: container.mainContext)
 
         // Insert sample data

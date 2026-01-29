@@ -5,13 +5,28 @@
 
 import SwiftUI
 
+/// Wrapper so we can use .sheet(item:) with Memo (SwiftData @Model types avoid explicit Identifiable).
+private struct MemoSheetItem: Identifiable {
+    let memo: Memo
+    var id: UUID { memo.id }
+}
+
 struct EntryDetailView: View {
     let entry: Entry
     var onDelete: () -> Void
     var onUpdate: ((Entry) -> Void)? = nil
 
     @Environment(\.dismiss) private var dismiss
+    @Environment(EntryStore.self) private var store
+
     @State private var isEditing = false
+    @State private var showMemoSheet = false
+    @State private var editingMemo: MemoSheetItem? = nil
+    @State private var showHiddenMemos = false
+    @State private var showDeleteConfirm = false
+    @State private var showDiscardAlert = false
+
+    // Edit state
     @State private var editAction: String = ""
     @State private var editCategory: EntryCategory = .food
     @State private var editContext: Set<TimeContext> = []
@@ -19,8 +34,6 @@ struct EntryDetailView: View {
     @State private var editEmotionalTags: Set<String> = []
     @State private var editWorthIt: WorthIt? = nil
     @State private var editNote: String = ""
-    @State private var showDeleteConfirm = false
-    @State private var showDiscardAlert = false
     @FocusState private var isEditNoteFocused: Bool
 
     private static let emotionTags = ["regret", "tired", "anxious", "guilty", "satisfied", "energized", "calm", "stressed"]
@@ -131,31 +144,45 @@ struct EntryDetailView: View {
         } message: {
             Text("This cannot be undone.")
         }
+        .sheet(isPresented: $showMemoSheet) {
+            AddMemoSheetView(actionName: entry.action) { outcome, feeling, note in
+                store.addMemo(to: entry, outcome: outcome, feeling: feeling, note: note)
+            }
+        }
+        .sheet(item: $editingMemo) { item in
+            EditMemoSheetView(memo: item.memo) { outcome, feeling, note in
+                store.updateMemo(item.memo, outcome: outcome, feeling: feeling, note: note)
+            }
+        }
     }
 
     // MARK: - View Mode Content
 
     private var viewModeContent: some View {
         VStack(alignment: .leading, spacing: sectionSpacing) {
-            heroCard
-            howItFeltSection
-            if !entry.note.isEmpty { yourNoteSection }
+            consolidatedHeroCard
+            timelineSection
             deleteButton
         }
     }
 
-    private var heroCard: some View {
+    // MARK: - Consolidated Hero Card
+
+    private var consolidatedHeroCard: some View {
         VStack(spacing: 0) {
+            // Emotional anchor
             Text(entry.physicalRating.emoji)
                 .font(.system(size: 56))
                 .padding(.bottom, 16)
 
+            // Action title
             Text(entry.action)
                 .font(.system(size: 22, weight: .medium, design: .serif))
                 .foregroundStyle(AppColors.foreground)
                 .multilineTextAlignment(.center)
                 .padding(.bottom, 8)
 
+            // Category & Context
             HStack(spacing: 4) {
                 Text(entry.category.emoji)
                 Text(entry.category.displayName)
@@ -166,12 +193,58 @@ struct EntryDetailView: View {
             .foregroundStyle(AppColors.mutedForeground)
             .padding(.bottom, 8)
 
+            // Time ago
             Text(entry.createdAt, style: .relative)
                 .font(.system(size: 12))
                 .foregroundStyle(AppColors.mutedForeground)
                 .padding(.bottom, 16)
 
+            // Worth It Badge
             WorthBadgeLarge(worthIt: entry.worthIt)
+
+            // Integrated "How it felt" section
+            VStack(spacing: 12) {
+                Divider()
+                    .background(AppColors.border.opacity(0.5))
+                    .padding(.top, 16)
+
+                HStack(spacing: 8) {
+                    Text(entry.physicalRating.emoji)
+                        .font(.system(size: 20))
+                    Text("Felt \(entry.physicalRating.displayName.lowercased())")
+                        .font(.system(size: 14))
+                        .foregroundStyle(AppColors.mutedForeground)
+                }
+
+                if !entry.emotionalTags.isEmpty {
+                    FlowLayout(spacing: 8) {
+                        ForEach(entry.emotionalTags, id: \.self) { tag in
+                            Text(tag)
+                                .font(.system(size: 14))
+                                .foregroundStyle(AppColors.mutedForeground)
+                                .padding(.horizontal, 12)
+                                .padding(.vertical, 6)
+                                .background(AppColors.muted)
+                                .clipShape(Capsule())
+                        }
+                    }
+                }
+            }
+
+            // Integrated note section
+            if !entry.note.isEmpty {
+                VStack(spacing: 12) {
+                    Divider()
+                        .background(AppColors.border.opacity(0.5))
+                        .padding(.top, 12)
+
+                    Text("\"\(entry.note)\"")
+                        .font(.system(size: 14))
+                        .italic()
+                        .foregroundStyle(AppColors.mutedForeground)
+                        .multilineTextAlignment(.center)
+                }
+            }
         }
         .padding(24)
         .frame(maxWidth: .infinity)
@@ -181,67 +254,97 @@ struct EntryDetailView: View {
         .shadow(color: AppShadows.soft, radius: AppShadows.softRadius, x: 0, y: 4)
     }
 
-    private var howItFeltSection: some View {
-        VStack(spacing: itemSpacing) {
-            Text("─────── How It Felt ───────")
+    // MARK: - Timeline Section
+
+    private var timelineSection: some View {
+        VStack(spacing: 12) {
+            // Section header
+            Text("─────── Timeline ───────")
                 .font(.system(size: 14, weight: .medium))
                 .foregroundStyle(AppColors.mutedForeground)
+                .frame(maxWidth: .infinity)
 
-            VStack(alignment: .leading, spacing: itemSpacing) {
-                HStack(spacing: itemSpacing) {
-                    Text(entry.physicalRating.emoji)
-                        .font(.system(size: 28))
-                    Text("Physical: \(entry.physicalRating.displayName)")
-                        .font(.system(size: 14))
-                        .foregroundStyle(AppColors.foreground)
+            // Add memo button
+            Button {
+                showMemoSheet = true
+            } label: {
+                HStack(spacing: 8) {
+                    Image(systemName: "plus")
+                        .font(.system(size: 14, weight: .medium))
+                    Text("Add a memo")
+                        .font(.system(size: 14, weight: .medium))
                 }
+                .foregroundStyle(AppColors.foreground)
+                .frame(maxWidth: .infinity)
+                .padding(.vertical, 14)
+                .background(AppColors.card)
+                .clipShape(RoundedRectangle(cornerRadius: 12))
+                .overlay(
+                    RoundedRectangle(cornerRadius: 12)
+                        .stroke(AppColors.border, lineWidth: 1)
+                )
+            }
+            .buttonStyle(.plain)
 
-                if !entry.emotionalTags.isEmpty {
-                    VStack(alignment: .leading, spacing: 8) {
-                        Text("Emotions:")
-                            .font(.system(size: 12))
-                            .foregroundStyle(AppColors.mutedForeground)
-
-                        FlowLayout(spacing: 8) {
-                            ForEach(entry.emotionalTags, id: \.self) { tag in
-                                Text(tag)
-                                    .font(.system(size: 14))
-                                    .foregroundStyle(AppColors.mutedForeground)
-                                    .padding(.horizontal, 12)
-                                    .padding(.vertical, 6)
-                                    .background(AppColors.muted)
-                                    .clipShape(Capsule())
-                            }
-                        }
+            // Hidden memos toggle
+            if (entry.memos ?? []).contains(where: { $0.isHidden }) {
+                Button {
+                    withAnimation(.easeInOut(duration: 0.2)) {
+                        showHiddenMemos.toggle()
                     }
+                } label: {
+                    HStack(spacing: 6) {
+                        Image(systemName: showHiddenMemos ? "eye.slash" : "eye")
+                            .font(.system(size: 12))
+                        Text(showHiddenMemos
+                             ? "Hide hidden memos"
+                             : "Show \((entry.memos ?? []).filter { $0.isHidden }.count) hidden")
+                            .font(.system(size: 12))
+                    }
+                    .foregroundStyle(AppColors.mutedForeground)
                 }
             }
-            .padding(16)
-            .frame(maxWidth: .infinity, alignment: .leading)
-            .background(AppColors.card)
-            .clipShape(RoundedRectangle(cornerRadius: 12))
-            .overlay(RoundedRectangle(cornerRadius: 12).stroke(AppColors.border.opacity(0.5), lineWidth: 1))
-            .shadow(color: AppShadows.soft, radius: AppShadows.softRadius, x: 0, y: 4)
+
+            // Memos list
+            if !(entry.memos ?? []).isEmpty {
+                VStack(spacing: 8) {
+                    ForEach(filteredMemos, id: \.id) { memo in
+                        MemoCardView(
+                            memo: memo,
+                            onEdit: { editingMemo = MemoSheetItem(memo: memo) },
+                            onDelete: { store.deleteMemo(memo) },
+                            onToggleStar: { store.toggleMemoStar(memo) },
+                            onToggleHide: { store.toggleMemoHidden(memo) }
+                        )
+                    }
+                }
+            } else {
+                // Empty state
+                VStack(spacing: 8) {
+                    Text("No memos yet")
+                        .font(.system(size: 14, weight: .medium))
+                        .foregroundStyle(AppColors.foreground)
+                    Text("Track what happens next time you face this decision.")
+                        .font(.system(size: 14))
+                        .foregroundStyle(AppColors.mutedForeground)
+                        .multilineTextAlignment(.center)
+                }
+                .padding(.vertical, 24)
+                .frame(maxWidth: .infinity)
+                .background(AppColors.card)
+                .clipShape(RoundedRectangle(cornerRadius: 12))
+                .overlay(
+                    RoundedRectangle(cornerRadius: 12)
+                        .stroke(AppColors.border.opacity(0.5), lineWidth: 1)
+                )
+            }
         }
     }
 
-    private var yourNoteSection: some View {
-        VStack(spacing: itemSpacing) {
-            Text("─────── Your Note ───────")
-                .font(.system(size: 14, weight: .medium))
-                .foregroundStyle(AppColors.mutedForeground)
-
-            Text("\"\(entry.note)\"")
-                .font(.system(size: 16))
-                .italic()
-                .foregroundStyle(AppColors.foreground)
-                .frame(maxWidth: .infinity, alignment: .leading)
-                .padding(16)
-                .background(AppColors.card)
-                .clipShape(RoundedRectangle(cornerRadius: 12))
-                .overlay(RoundedRectangle(cornerRadius: 12).stroke(AppColors.border.opacity(0.5), lineWidth: 1))
-                .shadow(color: AppShadows.soft, radius: AppShadows.softRadius, x: 0, y: 4)
-        }
+    private var filteredMemos: [Memo] {
+        (entry.memos ?? [])
+            .filter { showHiddenMemos || !$0.isHidden }
+            .sorted { $0.createdAt > $1.createdAt }
     }
 
     private var deleteButton: some View {
@@ -352,7 +455,7 @@ struct EntryDetailView: View {
                 .font(.system(size: 14, weight: .medium))
                 .foregroundStyle(AppColors.foreground)
 
-            LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: itemSpacing) {
+            LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible()), GridItem(.flexible()), GridItem(.flexible())], spacing: 8) {
                 ForEach(PhysicalRating.allCases, id: \.self) { rating in
                     let isSelected = editPhysicalRating == rating
                     Button {
@@ -360,22 +463,17 @@ struct EntryDetailView: View {
                     } label: {
                         VStack(spacing: 4) {
                             Text(rating.emoji)
-                                .font(.system(size: 32))
+                                .font(.system(size: 24))
                             Text(rating.displayName)
-                                .font(.system(size: 14, weight: .medium))
+                                .font(.system(size: 12, weight: .medium))
                         }
                         .foregroundStyle(isSelected ? AppColors.primaryForeground : AppColors.foreground)
                         .frame(maxWidth: .infinity)
-                        .padding(.vertical, 20)
-                        .background(isSelected ? AppColors.primary : AppColors.card)
+                        .padding(.vertical, 12)
+                        .background(isSelected ? AppColors.primary : AppColors.muted)
                         .clipShape(RoundedRectangle(cornerRadius: 12))
-                        .overlay(
-                            RoundedRectangle(cornerRadius: 12)
-                                .stroke(isSelected ? AppColors.primary : AppColors.border, lineWidth: 1)
-                        )
                     }
                     .buttonStyle(.plain)
-                    .scaleEffect(isSelected ? 1.02 : 1.0)
                 }
             }
         }
@@ -398,10 +496,10 @@ struct EntryDetailView: View {
                     } label: {
                         Text(tag)
                             .font(.system(size: 14, weight: .medium))
-                            .foregroundStyle(isSelected ? AppColors.secondaryForeground : AppColors.foreground)
-                            .padding(.horizontal, 14)
-                            .padding(.vertical, 8)
-                            .background(isSelected ? AppColors.secondary : AppColors.muted)
+                            .foregroundStyle(isSelected ? AppColors.primaryForeground : AppColors.foreground)
+                            .padding(.horizontal, 16)
+                            .padding(.vertical, 10)
+                            .background(isSelected ? AppColors.primary : AppColors.muted)
                             .clipShape(Capsule())
                     }
                     .buttonStyle(.plain)
@@ -416,17 +514,18 @@ struct EntryDetailView: View {
                 .font(.system(size: 14, weight: .medium))
                 .foregroundStyle(AppColors.foreground)
 
-            HStack(spacing: itemSpacing) {
+            LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible()), GridItem(.flexible())], spacing: 8) {
                 ForEach(WorthIt.allCases, id: \.self) { worth in
                     let isSelected = editWorthIt == worth
                     Button {
                         withAnimation(.easeInOut(duration: 0.15)) { editWorthIt = worth }
                     } label: {
-                        HStack(spacing: 4) {
+                        VStack(spacing: 4) {
                             Text(worth.emoji)
+                                .font(.system(size: 20))
                             Text(worth.label)
+                                .font(.system(size: 14, weight: .medium))
                         }
-                        .font(.system(size: 14, weight: .medium))
                         .foregroundStyle(isSelected ? AppColors.primaryForeground : AppColors.foreground)
                         .frame(maxWidth: .infinity)
                         .padding(.vertical, 14)
@@ -571,5 +670,6 @@ struct WorthBadgeLarge: View {
             onDelete: {},
             onUpdate: { _ in }
         )
+        .environment(EntryStore.preview)
     }
 }

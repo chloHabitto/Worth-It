@@ -14,7 +14,7 @@ struct Worth_It_App: App {
 
     // SwiftData container with CloudKit sync
     var sharedModelContainer: ModelContainer = {
-        let schema = Schema([Entry.self])
+        let schema = Schema([Entry.self, Memo.self])
 
         // Configure for iCloud sync
         let modelConfiguration = ModelConfiguration(

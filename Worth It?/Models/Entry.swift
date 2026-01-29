@@ -144,6 +144,10 @@ final class Entry {
         set { worthItRaw = newValue.rawValue }
     }
 
+    // MARK: - Memos Relationship
+    @Relationship(deleteRule: .cascade, inverse: \Memo.entry)
+    var memos: [Memo]? = nil
+
     // MARK: - Initializer
 
     init(
