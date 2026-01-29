@@ -237,4 +237,27 @@ extension View {
     func worthItCard() -> some View {
         modifier(AppCardStyle())
     }
+
+    /// Focus state styling for text inputs (TextField/TextEditor), matching SearchBarView.
+    /// Use with @FocusState and apply to the container (background + clipShape) that wraps the field.
+    func inputFocusStyle(isFocused: Bool, cornerRadius: CGFloat = 12) -> some View {
+        modifier(InputFocusStyleModifier(isFocused: isFocused, cornerRadius: cornerRadius))
+    }
+}
+
+// MARK: - Input Focus Style (search bar–style focus ring + shadow)
+
+struct InputFocusStyleModifier: ViewModifier {
+    let isFocused: Bool
+    var cornerRadius: CGFloat = 12
+
+    func body(content: Content) -> some View {
+        content
+            .overlay(
+                RoundedRectangle(cornerRadius: cornerRadius)
+                    .stroke(isFocused ? AppColors.primary.opacity(0.5) : AppColors.border.opacity(0.5), lineWidth: 1)
+            )
+            .shadow(color: Color.black.opacity(isFocused ? 0.08 : 0.04), radius: isFocused ? 12 : 8, x: 0, y: 4)
+            .animation(AppAnimations.fast, value: isFocused)
+    }
 }

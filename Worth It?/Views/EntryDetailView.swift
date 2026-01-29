@@ -33,6 +33,7 @@ struct EntryDetailView: View {
     @State private var editEmotionalTags: Set<String> = []
     @State private var editWorthIt: WorthIt? = nil
     @State private var editNote: String = ""
+    @FocusState private var isEditActionFocused: Bool
     @FocusState private var isEditNoteFocused: Bool
 
     private static let emotionTags = ["regret", "tired", "anxious", "guilty", "satisfied", "energized", "calm", "stressed"]
@@ -112,10 +113,11 @@ struct EntryDetailView: View {
                     }
                 }
             }
-            if isEditing, isEditNoteFocused {
+            if isEditing, (isEditActionFocused || isEditNoteFocused) {
                 ToolbarItemGroup(placement: .keyboard) {
                     Spacer()
                     Button("Done") {
+                        isEditActionFocused = false
                         isEditNoteFocused = false
                     }
                     .foregroundStyle(AppColors.primaryForeground)
@@ -346,7 +348,8 @@ struct EntryDetailView: View {
                 .padding(12)
                 .background(AppColors.card)
                 .clipShape(RoundedRectangle(cornerRadius: AppLayout.cardCornerRadius))
-                .overlay(RoundedRectangle(cornerRadius: AppLayout.cardCornerRadius).stroke(AppColors.border, lineWidth: 1))
+                .inputFocusStyle(isFocused: isEditActionFocused, cornerRadius: AppLayout.cardCornerRadius)
+                .focused($isEditActionFocused)
                 .submitLabel(.done)
         }
     }
@@ -511,7 +514,7 @@ struct EntryDetailView: View {
                 .padding(8)
                 .background(AppColors.card)
                 .clipShape(RoundedRectangle(cornerRadius: AppLayout.cardCornerRadius))
-                .overlay(RoundedRectangle(cornerRadius: AppLayout.cardCornerRadius).stroke(AppColors.border, lineWidth: 1))
+                .inputFocusStyle(isFocused: isEditNoteFocused, cornerRadius: AppLayout.cardCornerRadius)
                 .focused($isEditNoteFocused)
         }
     }

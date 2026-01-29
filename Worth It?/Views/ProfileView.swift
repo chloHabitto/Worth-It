@@ -23,6 +23,7 @@ struct ProfileView: View {
     // Local state
     @State private var isEditingName = false
     @State private var tempName = ""
+    @FocusState private var isNameFieldFocused: Bool
     @State private var showPhotoSheet = false
     @State private var showImagePicker = false
     @State private var showCamera = false
@@ -227,6 +228,8 @@ struct ProfileView: View {
                         .padding(.vertical, 12)
                         .background(AppColors.muted)
                         .clipShape(RoundedRectangle(cornerRadius: 8))
+                        .inputFocusStyle(isFocused: isNameFieldFocused, cornerRadius: 8)
+                        .focused($isNameFieldFocused)
                         .onSubmit { saveName() }
 
                     HStack(spacing: 12) {

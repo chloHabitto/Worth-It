@@ -43,6 +43,7 @@ enum AppTheme: String, CaseIterable {
 
 struct AccountView: View {
     @Environment(EntryStore.self) private var store
+    @Environment(AppLockManager.self) private var lockManager
     @AppStorage("appTheme") private var selectedTheme: AppTheme = .system
     @AppStorage("displayName") private var displayName: String = ""
     @AppStorage("profileImageData") private var profileImageBase64: String = ""
@@ -247,6 +248,19 @@ struct AccountView: View {
 
     private var dataPrivacySection: some View {
         SectionCard(title: "Data & Privacy") {
+            NavigationLink {
+                AppLockView()
+            } label: {
+                SettingsRowLabel(
+                    icon: "lock.fill",
+                    label: "App Lock",
+                    sublabel: lockManager.settings.isEnabled
+                        ? "PIN protection enabled"
+                        : "Protect your app with PIN or Face ID"
+                )
+            }
+            .buttonStyle(.plain)
+
             SettingsRow(
                 icon: "square.and.arrow.down",
                 label: "Export My Data",
@@ -652,4 +666,5 @@ struct SettingsRowLabel: View {
 #Preview {
     AccountView()
         .environment(EntryStore.preview)
+        .environment(AppLockManager.shared)
 }

@@ -222,7 +222,11 @@ struct LogExperienceView: View {
                         isNoteFieldFocused = false
                         isTextFieldFocused = false
                     }
-                    .foregroundStyle(AppColors.primary)
+                    .foregroundStyle(AppColors.primaryForeground)
+                    .padding(.horizontal, 16)
+                    .padding(.vertical, 8)
+                    .background(AppColors.primary)
+                    .clipShape(RoundedRectangle(cornerRadius: LogFlowLayout.buttonCornerRadius))
                 }
             }
         }
@@ -265,10 +269,7 @@ struct LogExperienceView: View {
                 .padding(16)
                 .background(AppColors.card)
                 .clipShape(RoundedRectangle(cornerRadius: LogFlowLayout.cardCornerRadius))
-                .overlay(
-                    RoundedRectangle(cornerRadius: LogFlowLayout.cardCornerRadius)
-                        .stroke(AppColors.border, lineWidth: 1)
-                )
+                .inputFocusStyle(isFocused: isTextFieldFocused, cornerRadius: LogFlowLayout.cardCornerRadius)
                 .focused($isTextFieldFocused)
                 .submitLabel(.done)
                 .onSubmit { isTextFieldFocused = false }
@@ -434,10 +435,7 @@ struct LogExperienceView: View {
                 }
                 .background(AppColors.card)
                 .clipShape(RoundedRectangle(cornerRadius: LogFlowLayout.cardCornerRadius))
-                .overlay(
-                    RoundedRectangle(cornerRadius: LogFlowLayout.cardCornerRadius)
-                        .stroke(AppColors.border.opacity(0.5), lineWidth: 1)
-                )
+                .inputFocusStyle(isFocused: isNoteFieldFocused, cornerRadius: LogFlowLayout.cardCornerRadius)
             }
         }
     }

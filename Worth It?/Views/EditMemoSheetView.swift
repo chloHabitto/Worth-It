@@ -14,6 +14,7 @@ struct EditMemoSheetView: View {
     @State private var outcome: MemoOutcome
     @State private var feeling: PhysicalRating
     @State private var note: String
+    @FocusState private var isNoteFocused: Bool
 
     init(memo: Memo, onSave: @escaping (MemoOutcome, PhysicalRating, String) -> Void) {
         self.memo = memo
@@ -154,10 +155,8 @@ struct EditMemoSheetView: View {
                             .padding(12)
                             .background(AppColors.card)
                             .clipShape(RoundedRectangle(cornerRadius: 12))
-                            .overlay(
-                                RoundedRectangle(cornerRadius: 12)
-                                    .stroke(AppColors.border, lineWidth: 1)
-                            )
+                            .inputFocusStyle(isFocused: isNoteFocused, cornerRadius: 12)
+                            .focused($isNoteFocused)
                     }
                 }
                 .padding(24)

@@ -7,9 +7,12 @@
 
 import SwiftUI
 import SwiftData
+import LocalAuthentication
 
 @main
 struct Worth_It_App: App {
+    @State private var lockManager = AppLockManager.shared
+    @Environment(\.scenePhase) private var scenePhase
     @AppStorage("appTheme") private var selectedTheme: AppTheme = .system
 
     // SwiftData container with CloudKit sync
@@ -32,9 +35,28 @@ struct Worth_It_App: App {
 
     var body: some Scene {
         WindowGroup {
-            ContentView()
-                .preferredColorScheme(selectedTheme.colorScheme)
+            ZStack {
+                ContentView()
+                    .environment(lockManager)
+                    .preferredColorScheme(selectedTheme.colorScheme)
+
+                if lockManager.settings.isEnabled && lockManager.isLocked {
+                    LockScreenView(
+                        onUnlock: { lockManager.unlock() },
+                        verifyPin: { lockManager.verifyPin($0) },
+                        biometricsEnabled: lockManager.settings.biometricsEnabled,
+                        biometricButtonTitle: lockManager.biometricType == .faceID ? "Use Face ID" : "Use Touch ID",
+                        onBiometricAuth: { await lockManager.authenticateWithBiometrics() }
+                    )
+                    .transition(.opacity)
+                    .zIndex(100)
+                }
+            }
+            .animation(.easeInOut(duration: 0.3), value: lockManager.isLocked)
         }
         .modelContainer(sharedModelContainer)
+        .onChange(of: scenePhase) { oldPhase, newPhase in
+            lockManager.handleScenePhaseChange(from: oldPhase, to: newPhase)
+        }
     }
 }

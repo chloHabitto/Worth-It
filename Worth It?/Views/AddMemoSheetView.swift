@@ -15,6 +15,7 @@ struct AddMemoSheetView: View {
     @State private var outcome: MemoOutcome? = nil
     @State private var feeling: PhysicalRating? = nil
     @State private var note: String = ""
+    @FocusState private var isNoteFocused: Bool
 
     private enum Step: Int {
         case outcome = 1
@@ -238,10 +239,8 @@ struct AddMemoSheetView: View {
                     .padding(12)
                     .background(AppColors.card)
                     .clipShape(RoundedRectangle(cornerRadius: 12))
-                    .overlay(
-                        RoundedRectangle(cornerRadius: 12)
-                            .stroke(AppColors.border, lineWidth: 1)
-                    )
+                    .inputFocusStyle(isFocused: isNoteFocused, cornerRadius: 12)
+                    .focused($isNoteFocused)
             }
 
             // Actions
