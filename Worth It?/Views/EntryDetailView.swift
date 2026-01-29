@@ -21,6 +21,7 @@ struct EntryDetailView: View {
     @State private var editNote: String = ""
     @State private var showDeleteConfirm = false
     @State private var showDiscardAlert = false
+    @FocusState private var isEditNoteFocused: Bool
 
     private static let emotionTags = ["regret", "tired", "anxious", "guilty", "satisfied", "energized", "calm", "stressed"]
 
@@ -97,6 +98,19 @@ struct EntryDetailView: View {
                     } label: {
                         Image(systemName: "pencil")
                     }
+                }
+            }
+            if isEditing, isEditNoteFocused {
+                ToolbarItemGroup(placement: .keyboard) {
+                    Spacer()
+                    Button("Done") {
+                        isEditNoteFocused = false
+                    }
+                    .foregroundStyle(AppColors.primaryForeground)
+                    .padding(.horizontal, 16)
+                    .padding(.vertical, 8)
+                    .background(AppColors.primary)
+                    .clipShape(Capsule())
                 }
             }
         }
@@ -271,6 +285,7 @@ struct EntryDetailView: View {
                 .background(AppColors.card)
                 .clipShape(RoundedRectangle(cornerRadius: AppLayout.cardCornerRadius))
                 .overlay(RoundedRectangle(cornerRadius: AppLayout.cardCornerRadius).stroke(AppColors.border, lineWidth: 1))
+                .submitLabel(.done)
         }
     }
 
@@ -439,6 +454,7 @@ struct EntryDetailView: View {
                 .background(AppColors.card)
                 .clipShape(RoundedRectangle(cornerRadius: AppLayout.cardCornerRadius))
                 .overlay(RoundedRectangle(cornerRadius: AppLayout.cardCornerRadius).stroke(AppColors.border, lineWidth: 1))
+                .focused($isEditNoteFocused)
         }
     }
 

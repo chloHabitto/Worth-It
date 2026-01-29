@@ -44,6 +44,8 @@ enum AppTheme: String, CaseIterable {
 struct AccountView: View {
     @Environment(EntryStore.self) private var store
     @AppStorage("appTheme") private var selectedTheme: AppTheme = .system
+    @AppStorage("displayName") private var displayName: String = ""
+    @AppStorage("profileImageData") private var profileImageBase64: String = ""
     @State private var showClearDataAlert = false
     @State private var showContactSheet = false
     @State private var showCopyConfirmation = false
@@ -52,6 +54,12 @@ struct AccountView: View {
 
     private var entryCount: Int {
         store.entries.count
+    }
+
+    private var profileImage: Image? {
+        guard let data = Data(base64Encoded: profileImageBase64),
+              let uiImage = UIImage(data: data) else { return nil }
+        return Image(uiImage: uiImage)
     }
 
     var body: some View {
@@ -119,69 +127,91 @@ struct AccountView: View {
             .foregroundStyle(AppColors.foreground)
     }
 
-    // MARK: - Profile Card
+    // MARK: - Profile Card (Tappable - navigates to ProfileView)
+    // React: <motion.button onClick={() => navigate('/profile')}>
 
     private var profileCard: some View {
-        VStack(spacing: 0) {
-            HStack(spacing: 16) {
-                Circle()
-                    .fill(
-                        LinearGradient(
-                            colors: [
-                                AppColors.primary.opacity(0.2),
-                                AppColors.accent.opacity(0.2)
-                            ],
-                            startPoint: .topLeading,
-                            endPoint: .bottomTrailing
-                        )
-                    )
-                    .frame(width: 64, height: 64)
-                    .overlay(
-                        Image(systemName: "person.fill")
-                            .font(.system(size: 32))
-                            .foregroundStyle(AppColors.primary)
-                    )
-
-                VStack(alignment: .leading, spacing: 4) {
-                    Text("Local User")
-                        .font(.system(size: 18, weight: .semibold))
-                        .foregroundStyle(AppColors.foreground)
-
-                    HStack(spacing: 6) {
-                        Image(systemName: "iphone")
-                            .font(.system(size: 14))
-                        Text("Data stored on this device")
-                            .font(.system(size: 14))
+        NavigationLink {
+            ProfileView()
+        } label: {
+            VStack(spacing: 0) {
+                HStack(spacing: 16) {
+                    // Profile image or default avatar
+                    if let profileImage = profileImage {
+                        profileImage
+                            .resizable()
+                            .scaledToFill()
+                            .frame(width: 64, height: 64)
+                            .clipShape(Circle())
+                    } else {
+                        Circle()
+                            .fill(
+                                LinearGradient(
+                                    colors: [
+                                        AppColors.primary.opacity(0.2),
+                                        AppColors.accent.opacity(0.2)
+                                    ],
+                                    startPoint: .topLeading,
+                                    endPoint: .bottomTrailing
+                                )
+                            )
+                            .frame(width: 64, height: 64)
+                            .overlay(
+                                Image(systemName: "person.fill")
+                                    .font(.system(size: 32))
+                                    .foregroundStyle(AppColors.primary)
+                            )
                     }
-                    .foregroundStyle(AppColors.mutedForeground)
+
+                    VStack(alignment: .leading, spacing: 4) {
+                        // React: {displayName || 'Local User'}
+                        Text(displayName.isEmpty ? "Local User" : displayName)
+                            .font(.system(size: 18, weight: .semibold))
+                            .foregroundStyle(AppColors.foreground)
+
+                        // Changed from "Data stored on this device" to show sync status
+                        HStack(spacing: 6) {
+                            Image(systemName: "icloud.fill")
+                                .font(.system(size: 14))
+                            Text("Synced across devices")
+                                .font(.system(size: 14))
+                        }
+                        .foregroundStyle(AppColors.mutedForeground)
+                    }
+
+                    Spacer()
+
+                    // React: <ChevronRight className="w-5 h-5 text-muted-foreground" />
+                    Image(systemName: "chevron.right")
+                        .font(.system(size: 14, weight: .medium))
+                        .foregroundStyle(AppColors.mutedForeground.opacity(0.5))
                 }
 
-                Spacer()
-            }
+                Divider()
+                    .background(AppColors.border.opacity(0.5))
+                    .padding(.top, 16)
 
-            Divider()
-                .background(AppColors.border.opacity(0.5))
+                HStack {
+                    Text("Memories logged")
+                        .font(.system(size: 14))
+                        .foregroundStyle(AppColors.mutedForeground)
+                    Spacer()
+                    Text("\(entryCount)")
+                        .font(.system(size: 16, weight: .semibold))
+                        .foregroundStyle(AppColors.primary)
+                }
                 .padding(.top, 16)
-
-            HStack {
-                Text("Memories logged")
-                    .font(.system(size: 14))
-                    .foregroundStyle(AppColors.mutedForeground)
-                Spacer()
-                Text("\(entryCount)")
-                    .font(.system(size: 16, weight: .semibold))
-                    .foregroundStyle(AppColors.primary)
             }
-            .padding(.top, 16)
+            .padding(20)
+            .background(AppColors.card)
+            .clipShape(RoundedRectangle(cornerRadius: 16))
+            .overlay(
+                RoundedRectangle(cornerRadius: 16)
+                    .stroke(AppColors.border.opacity(0.5), lineWidth: 1)
+            )
+            .shadow(color: AppShadows.soft, radius: AppShadows.softRadius, x: 0, y: AppShadows.softY)
         }
-        .padding(20)
-        .background(AppColors.card)
-        .clipShape(RoundedRectangle(cornerRadius: 16))
-        .overlay(
-            RoundedRectangle(cornerRadius: 16)
-                .stroke(AppColors.border.opacity(0.5), lineWidth: 1)
-        )
-        .shadow(color: AppShadows.soft, radius: AppShadows.softRadius, x: 0, y: AppShadows.softY)
+        .buttonStyle(.plain)
     }
 
     // MARK: - Appearance Section

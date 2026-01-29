@@ -117,7 +117,15 @@ struct QuickHelpSheetView: View {
     }
     
     var body: some View {
-        NavigationStack {
+        VStack(spacing: 0) {
+            // Custom Header
+            sheetHeader
+            
+            // Divider below header
+            Divider()
+                .background(AppColors.border.opacity(0.5))
+            
+            // Scrollable Content
             ScrollView {
                 VStack(alignment: .leading, spacing: 24) {
                     ForEach(Array(sections.enumerated()), id: \.element.id) { index, section in
@@ -130,43 +138,47 @@ struct QuickHelpSheetView: View {
                 .padding(.bottom, 48)
             }
             .scrollIndicators(.hidden)
-            .background(AppColors.background.ignoresSafeArea())
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .navigationBarLeading) {
-                    HStack(spacing: 12) {
-                        Circle()
-                            .fill(AppColors.primary.opacity(0.1))
-                            .frame(width: 40, height: 40)
-                            .overlay(
-                                Image(systemName: topic.icon)
-                                    .font(.system(size: 18))
-                                    .foregroundStyle(AppColors.primary)
-                            )
-                        
-                        Text(topic.title)
-                            .font(.system(size: 20, weight: .semibold, design: .serif))
-                            .foregroundStyle(AppColors.foreground)
-                    }
-                }
-                
-                ToolbarItem(placement: .navigationBarTrailing) {
-                    Button {
-                        dismiss()
-                    } label: {
-                        Image(systemName: "xmark")
-                            .font(.system(size: 14, weight: .medium))
-                            .foregroundStyle(AppColors.mutedForeground)
-                            .frame(width: 32, height: 32)
-                            .background(AppColors.muted)
-                            .clipShape(Circle())
-                    }
-                }
-            }
         }
+        .background(AppColors.background.ignoresSafeArea())
         .presentationDetents([.large])
         .presentationDragIndicator(.visible)
         .presentationCornerRadius(24)
+    }
+    
+    // MARK: - Custom Sheet Header
+    
+    private var sheetHeader: some View {
+        HStack(spacing: 12) {
+            // Icon + Title (NOT a button, just a display)
+            Circle()
+                .fill(AppColors.primary.opacity(0.1))
+                .frame(width: 44, height: 44)
+                .overlay(
+                    Image(systemName: topic.icon)
+                        .font(.system(size: 20))
+                        .foregroundStyle(AppColors.primary)
+                )
+            
+            Text(topic.title)
+                .font(.system(size: 20, weight: .semibold, design: .serif))
+                .foregroundStyle(AppColors.foreground)
+            
+            Spacer()
+            
+            // Close Button
+            Button {
+                dismiss()
+            } label: {
+                Image(systemName: "xmark")
+                    .font(.system(size: 14, weight: .medium))
+                    .foregroundStyle(AppColors.mutedForeground)
+                    .frame(width: 32, height: 32)
+                    .background(AppColors.muted)
+                    .clipShape(Circle())
+            }
+        }
+        .padding(.horizontal, 24)
+        .padding(.vertical, 16)
     }
 }
 

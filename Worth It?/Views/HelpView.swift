@@ -92,6 +92,10 @@ struct HelpView: View {
     @State private var searchQuery: String = ""
     @State private var expandedItems: Set<String> = []
     @State private var selectedHelpTopic: HelpTopic? = nil
+    @State private var showContactSheet = false
+    @State private var showCopyConfirmation = false
+    
+    private static let supportEmail = "support@worthit.app"
     
     private var filteredSections: [FAQSection] {
         guard !searchQuery.trimmingCharacters(in: .whitespaces).isEmpty else {
@@ -146,6 +150,18 @@ struct HelpView: View {
         .sheet(item: $selectedHelpTopic) { topic in
             QuickHelpSheetView(topic: topic)
         }
+        .confirmationDialog("Contact Us", isPresented: $showContactSheet, titleVisibility: .visible) {
+            Button("Open in Mail App") {
+                openMailApp()
+            }
+            Button("Copy Email Address") {
+                copyEmailToClipboard()
+            }
+            Button("Cancel", role: .cancel) {}
+        } message: {
+            Text(Self.supportEmail)
+        }
+        .overlay(copyConfirmationOverlay)
     }
     
     // MARK: - Search Bar Section
@@ -243,9 +259,7 @@ struct HelpView: View {
                 .multilineTextAlignment(.center)
             
             Button {
-                if let url = URL(string: "mailto:support@worthitapp.com") {
-                    UIApplication.shared.open(url)
-                }
+                showContactSheet = true
             } label: {
                 HStack(spacing: 8) {
                     Image(systemName: "envelope")
@@ -278,6 +292,50 @@ struct HelpView: View {
                 .stroke(AppColors.primary.opacity(0.2), lineWidth: 1)
         )
         .pageEntrance(delay: 0.4, offsetY: 10)
+    }
+    
+    // MARK: - Contact Actions
+    
+    private func openMailApp() {
+        if let url = URL(string: "mailto:\(Self.supportEmail)") {
+            UIApplication.shared.open(url)
+        }
+    }
+    
+    private func copyEmailToClipboard() {
+        UIPasteboard.general.string = Self.supportEmail
+        UIImpactFeedbackGenerator(style: .medium).impactOccurred()
+        showCopyConfirmation = true
+        DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
+            showCopyConfirmation = false
+        }
+    }
+    
+    @ViewBuilder
+    private var copyConfirmationOverlay: some View {
+        VStack {
+            Spacer()
+            if showCopyConfirmation {
+                Text("Email address copied to clipboard")
+                    .font(.system(size: 14, weight: .medium))
+                    .foregroundStyle(AppColors.foreground)
+                    .padding(.horizontal, 16)
+                    .padding(.vertical, 12)
+                    .background(AppColors.card)
+                    .clipShape(RoundedRectangle(cornerRadius: 12))
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 12)
+                            .stroke(AppColors.border.opacity(0.5), lineWidth: 1)
+                    )
+                    .shadow(color: AppShadows.soft, radius: AppShadows.softRadius, x: 0, y: AppShadows.softY)
+                    .padding(.horizontal, 24)
+                    .padding(.bottom, 100)
+                    .transition(.opacity.combined(with: .scale(scale: 0.95)))
+            }
+        }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .animation(.easeInOut(duration: 0.2), value: showCopyConfirmation)
+        .allowsHitTesting(false)
     }
 }
 
