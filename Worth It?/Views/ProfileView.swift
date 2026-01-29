@@ -7,6 +7,7 @@
 
 import SwiftUI
 import PhotosUI
+import AVFoundation
 
 // MARK: - Profile View
 
@@ -49,6 +50,18 @@ struct ProfileView: View {
 
     private var hasExistingPhoto: Bool {
         !profileImageBase64.isEmpty
+    }
+
+    private var isCameraAvailable: Bool {
+        UIImagePickerController.isSourceTypeAvailable(.camera)
+    }
+
+    private var sheetHeight: CGFloat {
+        var height: CGFloat = 180
+        if isCameraAvailable { height += 80 }
+        height += 80
+        if hasExistingPhoto { height += 80 }
+        return height
     }
 
     // MARK: - Body
@@ -98,6 +111,7 @@ struct ProfileView: View {
         .sheet(isPresented: $showPhotoSheet) {
             PhotoSelectionSheet(
                 hasExistingPhoto: hasExistingPhoto,
+                isCameraAvailable: isCameraAvailable,
                 onTakePhoto: {
                     showPhotoSheet = false
                     DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
@@ -117,7 +131,7 @@ struct ProfileView: View {
                     showPhotoSheet = false
                 }
             )
-            .presentationDetents([.height(hasExistingPhoto ? 340 : 280)])
+            .presentationDetents([.height(sheetHeight)])
             .presentationDragIndicator(.hidden)
             .presentationCornerRadius(24)
         }
@@ -472,6 +486,7 @@ struct ProfileView: View {
 
 struct PhotoSelectionSheet: View {
     let hasExistingPhoto: Bool
+    let isCameraAvailable: Bool
     let onTakePhoto: () -> Void
     let onChooseFromLibrary: () -> Void
     let onRemovePhoto: () -> Void
@@ -481,7 +496,6 @@ struct PhotoSelectionSheet: View {
     var body: some View {
         VStack(spacing: 0) {
             // Header
-            // React: flex items-center justify-between mb-6
             HStack {
                 Text("Change Profile Photo")
                     .font(.system(size: 18, weight: .semibold))
@@ -489,7 +503,6 @@ struct PhotoSelectionSheet: View {
 
                 Spacer()
 
-                // React: p-2 rounded-full hover:bg-muted/50
                 Button {
                     dismiss()
                 } label: {
@@ -506,21 +519,18 @@ struct PhotoSelectionSheet: View {
             .padding(.bottom, 24)
 
             // Options
-            // React: space-y-3
             VStack(spacing: 12) {
-                // Take Photo option
-                // React: w-full flex items-center gap-4 p-4 rounded-xl bg-muted/50
-                PhotoOptionButton(
-                    icon: "camera.fill",
-                    iconBackgroundColor: AppColors.primary.opacity(0.1),
-                    iconColor: AppColors.primary,
-                    title: "Take Photo",
-                    subtitle: "Use your camera",
-                    action: onTakePhoto
-                )
+                if isCameraAvailable {
+                    PhotoOptionButton(
+                        icon: "camera.fill",
+                        iconBackgroundColor: AppColors.primary.opacity(0.1),
+                        iconColor: AppColors.primary,
+                        title: "Take Photo",
+                        subtitle: "Use your camera",
+                        action: onTakePhoto
+                    )
+                }
 
-                // Choose from Album option
-                // React: bg-accent/10, text-accent-foreground
                 PhotoOptionButton(
                     icon: "photo.fill",
                     iconBackgroundColor: AppColors.accent.opacity(0.1),
@@ -530,7 +540,6 @@ struct PhotoSelectionSheet: View {
                     action: onChooseFromLibrary
                 )
 
-                // Remove Photo option (only if photo exists)
                 if hasExistingPhoto {
                     PhotoOptionButton(
                         icon: "trash.fill",
