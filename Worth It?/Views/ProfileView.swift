@@ -47,6 +47,10 @@ struct ProfileView: View {
         store.entries.min(by: { $0.createdAt < $1.createdAt })?.createdAt
     }
 
+    private var hasExistingPhoto: Bool {
+        !profileImageBase64.isEmpty
+    }
+
     // MARK: - Body
 
     var body: some View {
@@ -91,21 +95,31 @@ struct ProfileView: View {
                     .foregroundStyle(AppColors.foreground)
             }
         }
-        .confirmationDialog("Change Profile Photo", isPresented: $showPhotoSheet, titleVisibility: .visible) {
-            Button("Take Photo") {
-                showCamera = true
-            }
-            Button("Choose from Library") {
-                showImagePicker = true
-            }
-            if !profileImageBase64.isEmpty {
-                Button("Remove Photo", role: .destructive) {
+        .sheet(isPresented: $showPhotoSheet) {
+            PhotoSelectionSheet(
+                hasExistingPhoto: hasExistingPhoto,
+                onTakePhoto: {
+                    showPhotoSheet = false
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+                        showCamera = true
+                    }
+                },
+                onChooseFromLibrary: {
+                    showPhotoSheet = false
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+                        showImagePicker = true
+                    }
+                },
+                onRemovePhoto: {
                     withAnimation {
                         profileImageBase64 = ""
                     }
+                    showPhotoSheet = false
                 }
-            }
-            Button("Cancel", role: .cancel) {}
+            )
+            .presentationDetents([.height(hasExistingPhoto ? 340 : 280)])
+            .presentationDragIndicator(.hidden)
+            .presentationCornerRadius(24)
         }
         .photosPicker(isPresented: $showImagePicker, selection: $selectedPhotoItem, matching: .images)
         .onChange(of: selectedPhotoItem) { _, newItem in
@@ -450,6 +464,134 @@ struct ProfileView: View {
         let formatter = DateFormatter()
         formatter.dateFormat = "MMMM d, yyyy"
         return formatter.string(from: date)
+    }
+}
+
+// MARK: - Photo Selection Sheet
+// Translated from ProfilePage.tsx custom bottom sheet
+
+struct PhotoSelectionSheet: View {
+    let hasExistingPhoto: Bool
+    let onTakePhoto: () -> Void
+    let onChooseFromLibrary: () -> Void
+    let onRemovePhoto: () -> Void
+
+    @Environment(\.dismiss) private var dismiss
+
+    var body: some View {
+        VStack(spacing: 0) {
+            // Header
+            // React: flex items-center justify-between mb-6
+            HStack {
+                Text("Change Profile Photo")
+                    .font(.system(size: 18, weight: .semibold))
+                    .foregroundStyle(AppColors.foreground)
+
+                Spacer()
+
+                // React: p-2 rounded-full hover:bg-muted/50
+                Button {
+                    dismiss()
+                } label: {
+                    Image(systemName: "xmark")
+                        .font(.system(size: 14, weight: .medium))
+                        .foregroundStyle(AppColors.mutedForeground)
+                        .frame(width: 32, height: 32)
+                        .background(AppColors.muted)
+                        .clipShape(Circle())
+                }
+            }
+            .padding(.horizontal, 24)
+            .padding(.top, 24)
+            .padding(.bottom, 24)
+
+            // Options
+            // React: space-y-3
+            VStack(spacing: 12) {
+                // Take Photo option
+                // React: w-full flex items-center gap-4 p-4 rounded-xl bg-muted/50
+                PhotoOptionButton(
+                    icon: "camera.fill",
+                    iconBackgroundColor: AppColors.primary.opacity(0.1),
+                    iconColor: AppColors.primary,
+                    title: "Take Photo",
+                    subtitle: "Use your camera",
+                    action: onTakePhoto
+                )
+
+                // Choose from Album option
+                // React: bg-accent/10, text-accent-foreground
+                PhotoOptionButton(
+                    icon: "photo.fill",
+                    iconBackgroundColor: AppColors.accent.opacity(0.1),
+                    iconColor: AppColors.accent,
+                    title: "Choose from Album",
+                    subtitle: "Select an existing photo",
+                    action: onChooseFromLibrary
+                )
+
+                // Remove Photo option (only if photo exists)
+                if hasExistingPhoto {
+                    PhotoOptionButton(
+                        icon: "trash.fill",
+                        iconBackgroundColor: AppColors.destructive.opacity(0.1),
+                        iconColor: AppColors.destructive,
+                        title: "Remove Photo",
+                        subtitle: "Delete current photo",
+                        action: onRemovePhoto
+                    )
+                }
+            }
+            .padding(.horizontal, 24)
+            .padding(.bottom, 34) // Extra padding for home indicator
+
+            Spacer()
+        }
+        .background(AppColors.card.ignoresSafeArea())
+    }
+}
+
+// MARK: - Photo Option Button
+
+struct PhotoOptionButton: View {
+    let icon: String
+    let iconBackgroundColor: Color
+    let iconColor: Color
+    let title: String
+    let subtitle: String
+    let action: () -> Void
+
+    var body: some View {
+        Button(action: action) {
+            HStack(spacing: 16) {
+                // React: w-12 h-12 rounded-full bg-primary/10
+                Circle()
+                    .fill(iconBackgroundColor)
+                    .frame(width: 48, height: 48)
+                    .overlay(
+                        Image(systemName: icon)
+                            .font(.system(size: 24))
+                            .foregroundStyle(iconColor)
+                    )
+
+                // React: text-left
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(title)
+                        .font(.system(size: 16, weight: .medium))
+                        .foregroundStyle(AppColors.foreground)
+
+                    Text(subtitle)
+                        .font(.system(size: 14))
+                        .foregroundStyle(AppColors.mutedForeground)
+                }
+
+                Spacer()
+            }
+            .padding(16)
+            .background(AppColors.muted.opacity(0.5))
+            .clipShape(RoundedRectangle(cornerRadius: 12))
+        }
+        .buttonStyle(.plain)
     }
 }
 
