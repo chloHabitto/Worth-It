@@ -245,6 +245,7 @@ struct AccountView: View {
                 label: "Clear All Memories",
                 sublabel: "Permanently delete all logged entries",
                 isDestructive: true,
+                isLast: true,
                 action: { showClearDataAlert = true }
             )
         }
@@ -277,7 +278,9 @@ struct AccountView: View {
                 icon: "bubble.left.and.bubble.right",
                 label: "Send Feedback",
                 sublabel: "Help us improve Worth It?",
-                action: { /* TODO: Open feedback */ }
+                isExternal: true,
+                isLast: true,
+                action: { showContactSheet = true }
             )
         }
     }
@@ -298,9 +301,9 @@ struct AccountView: View {
                 icon: "square.and.arrow.up",
                 label: "Share with Friends",
                 sublabel: "Spread the word",
+                isLast: true,
                 action: handleShare
             )
-
         }
     }
 
@@ -480,41 +483,45 @@ struct SettingsRow: View {
     var sublabel: String? = nil
     var isExternal: Bool = false
     var isDestructive: Bool = false
+    var isLast: Bool = false  // Controls bottom divider
     var action: () -> Void
 
     var body: some View {
         Button(action: action) {
-            HStack(spacing: 12) {
-                Image(systemName: icon)
-                    .font(.system(size: 20))
-                    .frame(width: 24)
+            VStack(spacing: 0) {
+                HStack(spacing: 12) {
+                    Image(systemName: icon)
+                        .font(.system(size: 20))
+                        .frame(width: 24)
 
-                VStack(alignment: .leading, spacing: 2) {
-                    Text(label)
-                        .font(.system(size: 16, weight: .medium))
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text(label)
+                            .font(.system(size: 16, weight: .medium))
 
-                    if let sublabel = sublabel {
-                        Text(sublabel)
-                            .font(.system(size: 12))
-                            .opacity(0.7)
+                        if let sublabel = sublabel {
+                            Text(sublabel)
+                                .font(.system(size: 12))
+                                .opacity(0.7)
+                        }
                     }
+
+                    Spacer()
+
+                    Image(systemName: isExternal ? "arrow.up.right" : "chevron.right")
+                        .font(.system(size: 14))
+                        .opacity(0.5)
                 }
+                .foregroundStyle(isDestructive ? AppColors.destructive : AppColors.foreground)
+                .padding(16)
 
-                Spacer()
-
-                Image(systemName: isExternal ? "arrow.up.right" : "chevron.right")
-                    .font(.system(size: 14))
-                    .opacity(0.5)
+                // Bottom divider (only if not last item)
+                if !isLast {
+                    Divider()
+                        .background(AppColors.border.opacity(0.5))
+                }
             }
-            .foregroundStyle(isDestructive ? AppColors.destructive : AppColors.foreground)
-            .padding(16)
         }
         .buttonStyle(.plain)
-        .overlay(
-            Divider()
-                .background(AppColors.border.opacity(0.5)),
-            alignment: .bottom
-        )
     }
 }
 
@@ -570,39 +577,43 @@ struct SettingsRowLabel: View {
     let icon: String
     let label: String
     var sublabel: String? = nil
+    var isLast: Bool = false  // Controls bottom divider
 
     var body: some View {
-        HStack(spacing: 12) {
-            Image(systemName: icon)
-                .font(.system(size: 20))
-                .foregroundStyle(AppColors.foreground)
-                .frame(width: 24)
-
-            VStack(alignment: .leading, spacing: 2) {
-                Text(label)
-                    .font(.system(size: 16, weight: .medium))
+        VStack(spacing: 0) {
+            HStack(spacing: 12) {
+                Image(systemName: icon)
+                    .font(.system(size: 20))
                     .foregroundStyle(AppColors.foreground)
+                    .frame(width: 24)
 
-                if let sublabel = sublabel {
-                    Text(sublabel)
-                        .font(.system(size: 12))
-                        .foregroundStyle(AppColors.mutedForeground)
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(label)
+                        .font(.system(size: 16, weight: .medium))
+                        .foregroundStyle(AppColors.foreground)
+
+                    if let sublabel = sublabel {
+                        Text(sublabel)
+                            .font(.system(size: 12))
+                            .foregroundStyle(AppColors.mutedForeground)
+                    }
                 }
+
+                Spacer()
+
+                Image(systemName: "chevron.right")
+                    .font(.system(size: 14, weight: .medium))
+                    .foregroundStyle(AppColors.mutedForeground.opacity(0.5))
             }
+            .padding(16)
+            .contentShape(Rectangle())
 
-            Spacer()
-
-            Image(systemName: "chevron.right")
-                .font(.system(size: 14, weight: .medium))
-                .foregroundStyle(AppColors.mutedForeground.opacity(0.5))
+            // Bottom divider (only if not last item)
+            if !isLast {
+                Divider()
+                    .background(AppColors.border.opacity(0.5))
+            }
         }
-        .padding(16)
-        .contentShape(Rectangle())
-        .overlay(
-            Divider()
-                .background(AppColors.border.opacity(0.5)),
-            alignment: .bottom
-        )
     }
 }
 

@@ -2,37 +2,8 @@
 //  HelpView.swift
 //  Worth It?
 //
-//  Translated from HelpPage.tsx (recall-resolve)
-//
 
 import SwiftUI
-
-// MARK: - Quick Help Data
-
-struct QuickHelpItem: Identifiable {
-    let id = UUID()
-    let icon: String
-    let title: String
-    let description: String
-}
-
-private let quickHelpItems: [QuickHelpItem] = [
-    QuickHelpItem(
-        icon: "sparkles",
-        title: "Getting Started",
-        description: "Learn the basics of Worth It? and how to log your first memory."
-    ),
-    QuickHelpItem(
-        icon: "book",
-        title: "How Logging Works",
-        description: "Capture experiences with emotions, categories, and personal notes."
-    ),
-    QuickHelpItem(
-        icon: "hand.thumbsup",
-        title: "Understanding Ratings",
-        description: "What \"Worth It\", \"Meh\", and \"Not Worth It\" mean for your decisions."
-    )
-]
 
 // MARK: - FAQ Data
 
@@ -120,6 +91,7 @@ private let faqSections: [FAQSection] = [
 struct HelpView: View {
     @State private var searchQuery: String = ""
     @State private var expandedItems: Set<String> = []
+    @State private var selectedHelpTopic: HelpTopic? = nil
     
     private var filteredSections: [FAQSection] {
         guard !searchQuery.trimmingCharacters(in: .whitespaces).isEmpty else {
@@ -171,6 +143,9 @@ struct HelpView: View {
                 }
             }
         }
+        .sheet(item: $selectedHelpTopic) { topic in
+            QuickHelpSheetView(topic: topic)
+        }
     }
     
     // MARK: - Search Bar Section
@@ -191,9 +166,11 @@ struct HelpView: View {
                 .padding(.leading, 4)
             
             VStack(spacing: 12) {
-                ForEach(Array(quickHelpItems.enumerated()), id: \.element.id) { index, item in
-                    QuickHelpCard(item: item)
-                        .pageEntrance(delay: 0.1 + Double(index) * 0.05, offsetY: 10)
+                ForEach(Array(HelpTopic.allCases.enumerated()), id: \.element.id) { index, topic in
+                    QuickHelpCard(topic: topic) {
+                        selectedHelpTopic = topic
+                    }
+                    .pageEntrance(delay: 0.1 + Double(index) * 0.05, offsetY: 10)
                 }
             }
         }
@@ -307,40 +284,51 @@ struct HelpView: View {
 // MARK: - Quick Help Card
 
 struct QuickHelpCard: View {
-    let item: QuickHelpItem
+    let topic: HelpTopic
+    let action: () -> Void
     
     var body: some View {
-        HStack(alignment: .top, spacing: 16) {
-            Circle()
-                .fill(AppColors.primary.opacity(0.1))
-                .frame(width: 40, height: 40)
-                .overlay(
-                    Image(systemName: item.icon)
-                        .font(.system(size: 18))
-                        .foregroundStyle(AppColors.primary)
-                )
-            
-            VStack(alignment: .leading, spacing: 4) {
-                Text(item.title)
-                    .font(.system(size: 16, weight: .medium))
-                    .foregroundStyle(AppColors.foreground)
+        Button(action: action) {
+            HStack(alignment: .top, spacing: 16) {
+                Circle()
+                    .fill(AppColors.primary.opacity(0.1))
+                    .frame(width: 40, height: 40)
+                    .overlay(
+                        Image(systemName: topic.icon)
+                            .font(.system(size: 18))
+                            .foregroundStyle(AppColors.primary)
+                    )
                 
-                Text(item.description)
-                    .font(.system(size: 14))
-                    .foregroundStyle(AppColors.mutedForeground)
-                    .fixedSize(horizontal: false, vertical: true)
+                VStack(alignment: .leading, spacing: 4) {
+                    Text(topic.title)
+                        .font(.system(size: 16, weight: .medium))
+                        .foregroundStyle(AppColors.foreground)
+                    
+                    Text(topic.description)
+                        .font(.system(size: 14))
+                        .foregroundStyle(AppColors.mutedForeground)
+                        .fixedSize(horizontal: false, vertical: true)
+                        .multilineTextAlignment(.leading)
+                }
+                
+                Spacer(minLength: 0)
+                
+                Image(systemName: "chevron.right")
+                    .font(.system(size: 14, weight: .medium))
+                    .foregroundStyle(AppColors.mutedForeground.opacity(0.5))
+                    .padding(.top, 4)
             }
-            
-            Spacer(minLength: 0)
+            .padding(16)
+            .background(AppColors.card)
+            .clipShape(RoundedRectangle(cornerRadius: 12))
+            .overlay(
+                RoundedRectangle(cornerRadius: 12)
+                    .stroke(AppColors.border.opacity(0.5), lineWidth: 1)
+            )
+            .shadow(color: AppShadows.soft, radius: AppShadows.softRadius, x: 0, y: AppShadows.softY)
+            .contentShape(Rectangle())
         }
-        .padding(16)
-        .background(AppColors.card)
-        .clipShape(RoundedRectangle(cornerRadius: 12))
-        .overlay(
-            RoundedRectangle(cornerRadius: 12)
-                .stroke(AppColors.border.opacity(0.5), lineWidth: 1)
-        )
-        .shadow(color: AppShadows.soft, radius: AppShadows.softRadius, x: 0, y: AppShadows.softY)
+        .buttonStyle(.plain)
     }
 }
 
@@ -439,8 +427,6 @@ struct FAQAccordionItem: View {
         }
     }
 }
-
-// MARK: - Preview
 
 #Preview {
     HelpView()
