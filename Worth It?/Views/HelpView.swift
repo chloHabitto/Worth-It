@@ -95,7 +95,7 @@ struct HelpView: View {
     @State private var selectedHelpTopic: HelpTopic? = nil
     @State private var showContactSheet = false
 
-    private static let supportEmail = "support@worthit.app"
+    private static let supportEmail = "chloe@habitto.nl"
     
     private var filteredSections: [FAQSection] {
         guard !searchQuery.trimmingCharacters(in: .whitespaces).isEmpty else {

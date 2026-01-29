@@ -51,7 +51,7 @@ struct AccountView: View {
     @State private var showClearDataAlert = false
     @State private var showContactSheet = false
 
-    private static let supportEmail = "support@worthit.app"
+    private static let supportEmail = "chloe@habitto.nl"
 
     private var entryCount: Int {
         store.entries.count
@@ -272,7 +272,7 @@ struct AccountView: View {
                 label: "Privacy Policy",
                 sublabel: "How we handle your data",
                 isExternal: true,
-                action: { /* TODO: Open privacy policy */ }
+                action: { openURL("https://worth-it-website.pages.dev/privacy") }
             )
 
             SettingsRow(
@@ -280,7 +280,7 @@ struct AccountView: View {
                 label: "Terms of Use",
                 sublabel: "Our terms and conditions",
                 isExternal: true,
-                action: { /* TODO: Open terms */ }
+                action: { openURL("https://www.apple.com/legal/internet-services/itunes/dev/stdeula/") }
             )
 
             if !store.hiddenEntries.isEmpty {
@@ -367,7 +367,7 @@ struct AccountView: View {
 
     private var footer: some View {
         VStack(spacing: 4) {
-            Link("Website", destination: URL(string: "https://worthit.app")!)
+            Link("Website", destination: URL(string: "https://worth-it-website.pages.dev/")!)
                 .font(.system(size: 14, weight: .medium))
                 .foregroundStyle(AppColors.mutedForeground)
                 .underline()
@@ -464,6 +464,11 @@ struct AccountView: View {
         UIPasteboard.general.string = Self.supportEmail
         UIImpactFeedbackGenerator(style: .medium).impactOccurred()
         toast.success("Email copied")
+    }
+
+    private func openURL(_ urlString: String) {
+        guard let url = URL(string: urlString) else { return }
+        UIApplication.shared.open(url)
     }
 }
 
