@@ -42,7 +42,7 @@ struct AddMemoSheetView: View {
             .scrollIndicators(.hidden)
         }
         .background(AppColors.background.ignoresSafeArea())
-        .presentationDetents([.medium])
+        .presentationDetents([.fraction(0.75)])
         .presentationDragIndicator(.visible)
         .presentationCornerRadius(24)
     }
@@ -51,7 +51,7 @@ struct AddMemoSheetView: View {
 
     private var sheetHeader: some View {
         VStack(spacing: 12) {
-            // Top row: Close button + Title
+            // Top row: Close button + Progress indicator
             HStack {
                 Button {
                     dismiss()
@@ -62,6 +62,16 @@ struct AddMemoSheetView: View {
                         .frame(width: 32, height: 32)
                         .background(AppColors.muted)
                         .clipShape(Circle())
+                }
+
+                Spacer()
+
+                HStack(spacing: 6) {
+                    ForEach(1...3, id: \.self) { i in
+                        Circle()
+                            .fill(i <= step.rawValue ? AppColors.primary : AppColors.muted)
+                            .frame(width: 8, height: 8)
+                    }
                 }
 
                 Spacer()
@@ -78,18 +88,9 @@ struct AddMemoSheetView: View {
                 .font(.system(size: 14))
                 .foregroundStyle(AppColors.mutedForeground)
                 .lineLimit(1)
-
-            HStack(spacing: 6) {
-                ForEach(1...3, id: \.self) { i in
-                    RoundedRectangle(cornerRadius: 3)
-                        .fill(i <= step.rawValue ? AppColors.primary : AppColors.muted)
-                        .frame(width: 32, height: 6)
-                }
-            }
         }
+        .padding(.vertical, 16)
         .padding(.horizontal, 24)
-        .padding(.top, 16)
-        .padding(.bottom, 12)
     }
 
     private var stepTitle: String {
