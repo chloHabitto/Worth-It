@@ -11,6 +11,9 @@ import SwiftData
 @Observable
 final class EntryStore {
     private let modelContext: ModelContext
+    private var _refreshTrigger: Int = 0
+
+    var refreshTrigger: Int { _refreshTrigger }
 
     init(modelContext: ModelContext) {
         self.modelContext = modelContext
@@ -19,6 +22,9 @@ final class EntryStore {
     // MARK: - Fetching
 
     var entries: [Entry] {
+        // Touch refreshTrigger so SwiftUI tracks this dependency
+        _ = _refreshTrigger
+
         let descriptor = FetchDescriptor<Entry>(
             sortBy: [SortDescriptor(\.createdAt, order: .reverse)]
         )
@@ -26,7 +32,11 @@ final class EntryStore {
     }
 
     var recentEntries: [Entry] {
-        entries
+        entries.filter { !$0.isHidden }.sorted { $0.createdAt > $1.createdAt }
+    }
+
+    var hiddenEntries: [Entry] {
+        entries.filter { $0.isHidden }.sorted { $0.createdAt > $1.createdAt }
     }
 
     func entries(matching query: String) -> [Entry] {
@@ -59,6 +69,16 @@ final class EntryStore {
         save()
     }
 
+    func hide(_ entry: Entry) {
+        entry.isHidden = true
+        save()
+    }
+
+    func unhide(_ entry: Entry) {
+        entry.isHidden = false
+        save()
+    }
+
     func update(updated: Entry) {
         guard let existing = entries.first(where: { $0.id == updated.id }) else { return }
         existing.action = updated.action
@@ -68,6 +88,7 @@ final class EntryStore {
         existing.emotionalTags = updated.emotionalTags
         existing.worthIt = updated.worthIt
         existing.note = updated.note
+        existing.isHidden = updated.isHidden
         save()
     }
 
@@ -111,6 +132,7 @@ final class EntryStore {
     private func save() {
         do {
             try modelContext.save()
+            _refreshTrigger += 1
         } catch {
             print("Failed to save: \(error)")
         }

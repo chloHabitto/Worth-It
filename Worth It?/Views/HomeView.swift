@@ -10,6 +10,8 @@ struct HomeView: View {
     @State private var searchText = ""
     @State private var showLogSheet = false
     @State private var selectedEntry: Entry? = nil
+    @State private var entryToDelete: Entry? = nil
+    @State private var showDeleteConfirmation = false
 
     private var filteredEntries: [Entry] {
         store.entries(matching: searchText)
@@ -21,11 +23,10 @@ struct HomeView: View {
 
     var body: some View {
         NavigationStack {
-            ScrollView {
-                VStack(alignment: .leading, spacing: 0) {
-                    // HEADER: px-6 pt-12 pb-6
+            List {
+                // Header section
+                Section {
                     VStack(alignment: .leading, spacing: 4) {
-                        // text-3xl font-serif font-semibold — NOTE: semibold NOT italic
                         Text("Worth It?")
                             .font(.system(size: 30, weight: .semibold, design: .serif))
                             .foregroundStyle(AppColors.foreground)
@@ -34,60 +35,84 @@ struct HomeView: View {
                             .font(.body)
                             .foregroundStyle(AppColors.mutedForeground)
                     }
-                    .padding(.horizontal, 24)
-                    .padding(.top, 48)
-                    .padding(.bottom, 24)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .listRowBackground(Color.clear)
+                    .listRowSeparator(.hidden)
+                    .listRowInsets(EdgeInsets(top: 48, leading: 24, bottom: 24, trailing: 24))
                     .pageEntrance(delay: 0, offsetY: -10)
 
-                    // SEARCH: px-6 mb-8
                     SearchBarView(text: $searchText)
-                        .padding(.horizontal, 24)
-                        .padding(.bottom, 32)
+                        .listRowBackground(Color.clear)
+                        .listRowSeparator(.hidden)
+                        .listRowInsets(EdgeInsets(top: 0, leading: 24, bottom: 32, trailing: 24))
                         .pageEntrance(delay: 0.1, offsetY: 10)
 
-                    // LOG BUTTON: px-6 mb-8
                     LogExperienceButton(action: { showLogSheet = true })
-                        .padding(.horizontal, 24)
-                        .padding(.bottom, 32)
+                        .listRowBackground(Color.clear)
+                        .listRowSeparator(.hidden)
+                        .listRowInsets(EdgeInsets(top: 0, leading: 24, bottom: 32, trailing: 24))
                         .pageEntrance(delay: 0.2, offsetY: 10)
+                }
 
-                    // RECENT SECTION: px-6 flex-1
-                    VStack(alignment: .leading, spacing: 16) {
-                        Text("Recent memories")
-                            .font(.system(size: 18, weight: .medium, design: .serif))
-                            .foregroundStyle(AppColors.foreground)
-                            .pageEntrance(delay: 0.3)
+                // Recent memories section
+                Section {
+                    Text("Recent memories")
+                        .font(.system(size: 18, weight: .medium, design: .serif))
+                        .foregroundStyle(AppColors.foreground)
+                        .listRowBackground(Color.clear)
+                        .listRowSeparator(.hidden)
+                        .listRowInsets(EdgeInsets(top: 0, leading: 24, bottom: 8, trailing: 24))
+                        .pageEntrance(delay: 0.3)
 
-                        if store.entries.isEmpty {
-                            EmptyStateView(
-                                icon: "sparkles",
-                                title: "No memories yet",
-                                description: "Start by logging your first experience. It only takes a minute.",
-                                actionLabel: "Log your first experience",
-                                action: { showLogSheet = true }
-                            )
-                            .pageEntrance(delay: 0.4, offsetY: 20)
-                        } else {
-                            VStack(spacing: 12) {
-                                ForEach(Array(recentToShow.enumerated()), id: \.element.id) { index, entry in
-                                    Button {
-                                        selectedEntry = entry
-                                    } label: {
-                                        EntryCardView(entry: entry, compact: true)
-                                            .contentShape(Rectangle())
-                                    }
-                                    .buttonStyle(.plain)
-                                    .staggeredAppear(index: index, baseDelay: 0.3)
+                    if recentToShow.isEmpty {
+                        EmptyStateView(
+                            icon: "sparkles",
+                            title: "No memories yet",
+                            description: "Start by logging your first experience. It only takes a minute.",
+                            actionLabel: "Log your first experience",
+                            action: { showLogSheet = true }
+                        )
+                        .listRowBackground(Color.clear)
+                        .listRowSeparator(.hidden)
+                        .listRowInsets(EdgeInsets(top: 0, leading: 24, bottom: 0, trailing: 24))
+                        .pageEntrance(delay: 0.4, offsetY: 20)
+                    } else {
+                        ForEach(recentToShow) { entry in
+                            Button {
+                                selectedEntry = entry
+                            } label: {
+                                EntryCardView(entry: entry, compact: true)
+                                    .contentShape(Rectangle())
+                            }
+                            .buttonStyle(.plain)
+                            .listRowBackground(Color.clear)
+                            .listRowSeparator(.hidden)
+                            .listRowInsets(EdgeInsets(top: 6, leading: 24, bottom: 6, trailing: 24))
+                            .swipeActions(edge: .trailing, allowsFullSwipe: false) {
+                                Button(role: .destructive) {
+                                    entryToDelete = entry
+                                    showDeleteConfirmation = true
+                                } label: {
+                                    Label("Delete", systemImage: "trash")
                                 }
+                            }
+                            .swipeActions(edge: .leading, allowsFullSwipe: true) {
+                                Button {
+                                    store.hide(entry)
+                                } label: {
+                                    Label("Hide", systemImage: "eye.slash")
+                                }
+                                .tint(AppColors.mutedForeground)
                             }
                         }
                     }
-                    .padding(.horizontal, 24)
                 }
-                .padding(.bottom, 96)
             }
+            .listStyle(.plain)
+            .scrollContentBackground(.hidden)
             .scrollIndicators(.hidden)
             .background(AppColors.background.ignoresSafeArea())
+            .padding(.bottom, 96)
             .navigationBarTitleDisplayMode(.inline)
             .toolbar(.hidden, for: .navigationBar)
             .navigationDestination(item: $selectedEntry) { entry in
@@ -95,6 +120,17 @@ struct HomeView: View {
             }
             .sheet(isPresented: $showLogSheet) {
                 LogExperienceView(store: store)
+            }
+            .alert("Delete memory?", isPresented: $showDeleteConfirmation) {
+                Button("Cancel", role: .cancel) { entryToDelete = nil }
+                Button("Delete", role: .destructive) {
+                    if let entry = entryToDelete {
+                        store.delete(entry)
+                    }
+                    entryToDelete = nil
+                }
+            } message: {
+                Text("This memory will be permanently deleted. This action cannot be undone.")
             }
         }
     }

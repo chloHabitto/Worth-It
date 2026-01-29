@@ -284,6 +284,19 @@ struct AccountView: View {
                 action: { /* TODO: Open terms */ }
             )
 
+            if !store.hiddenEntries.isEmpty {
+                NavigationLink {
+                    HiddenMemoriesView()
+                } label: {
+                    SettingsRowLabel(
+                        icon: "eye.slash",
+                        label: "Hidden memories",
+                        sublabel: "\(store.hiddenEntries.count) \(store.hiddenEntries.count == 1 ? "memory" : "memories") hidden"
+                    )
+                }
+                .buttonStyle(.plain)
+            }
+
             SettingsRow(
                 icon: "trash",
                 label: "Clear All Memories",

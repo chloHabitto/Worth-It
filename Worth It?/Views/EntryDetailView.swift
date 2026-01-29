@@ -24,6 +24,7 @@ struct EntryDetailView: View {
     @State private var editingMemo: MemoSheetItem? = nil
     @State private var showHiddenMemos = false
     @State private var showDiscardAlert = false
+    @State private var showDeleteConfirmation = false
 
     // Edit state
     @State private var editAction: String = ""
@@ -106,10 +107,19 @@ struct EntryDetailView: View {
                         .foregroundStyle(AppColors.foreground)
                 }
                 ToolbarItem(placement: .navigationBarTrailing) {
-                    Button {
-                        startEditing()
+                    Menu {
+                        Button {
+                            startEditing()
+                        } label: {
+                            Label("Edit", systemImage: "pencil")
+                        }
+                        Button(role: .destructive) {
+                            showDeleteConfirmation = true
+                        } label: {
+                            Label("Delete", systemImage: "trash")
+                        }
                     } label: {
-                        Image(systemName: "pencil")
+                        Image(systemName: "ellipsis")
                     }
                 }
             }
@@ -135,6 +145,15 @@ struct EntryDetailView: View {
             }
         } message: {
             Text("You have unsaved changes that will be lost.")
+        }
+        .alert("Delete memory?", isPresented: $showDeleteConfirmation) {
+            Button("Cancel", role: .cancel) {}
+            Button("Delete", role: .destructive) {
+                onDelete()
+                dismiss()
+            }
+        } message: {
+            Text("This memory will be permanently deleted.")
         }
         .sheet(isPresented: $showMemoSheet) {
             AddMemoSheetView(actionName: entry.action) { outcome, feeling, note in

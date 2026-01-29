@@ -14,12 +14,14 @@ enum MemoOutcome: String, CaseIterable, Codable {
     case didAgain = "did-again"
     case resisted = "resisted"
     case reflecting = "reflecting"
+    case other = "other"
 
     var emoji: String {
         switch self {
         case .didAgain: return "🔄"
         case .resisted: return "💪"
         case .reflecting: return "💭"
+        case .other: return "📝"
         }
     }
 
@@ -28,6 +30,7 @@ enum MemoOutcome: String, CaseIterable, Codable {
         case .didAgain: return "Did it again"
         case .resisted: return "Resisted"
         case .reflecting: return "Still thinking"
+        case .other: return "Other"
         }
     }
 }

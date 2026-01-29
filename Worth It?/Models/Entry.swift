@@ -121,6 +121,7 @@ final class Entry {
     var worthItRaw: String = "meh"
     var note: String = ""
     var createdAt: Date = Date()
+    var isHidden: Bool = false
 
     // MARK: - Computed Properties for Type-Safe Access
 
@@ -159,7 +160,8 @@ final class Entry {
         emotionalTags: [String] = [],
         worthIt: WorthIt,
         note: String = "",
-        createdAt: Date = Date()
+        createdAt: Date = Date(),
+        isHidden: Bool = false
     ) {
         self.id = id
         self.action = action
@@ -170,6 +172,7 @@ final class Entry {
         self.worthItRaw = worthIt.rawValue
         self.note = note
         self.createdAt = createdAt
+        self.isHidden = isHidden
     }
 }
 
