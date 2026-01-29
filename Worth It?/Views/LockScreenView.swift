@@ -12,13 +12,14 @@ struct LockScreenView: View {
     let onUnlock: () -> Void
     let verifyPin: (String) -> Bool
     let biometricsEnabled: Bool
-    let biometricButtonTitle: String  // "Use Face ID" or "Use Touch ID"
+    let biometricType: LABiometryType
     let onBiometricAuth: () async -> Bool
 
     @State private var pin: String = ""
     @State private var error: Bool = false
     @State private var success: Bool = false
     @State private var shakeOffset: CGFloat = 0
+    @State private var hasAttemptedBiometric: Bool = false
 
     private let pinLength = 4
 
@@ -95,9 +96,9 @@ struct LockScreenView: View {
                         }
                     } label: {
                         HStack(spacing: 8) {
-                            Image(systemName: LABiometryType.faceID == biometricTypeForIcon ? "faceid" : "touchid")
+                            Image(systemName: biometricType == .faceID ? "faceid" : "touchid")
                                 .font(.system(size: 20))
-                            Text(biometricButtonTitle)
+                            Text(biometricType == .faceID ? "Use Face ID" : "Use Touch ID")
                                 .font(.system(size: 16, weight: .medium))
                         }
                         .foregroundStyle(AppColors.foreground)
@@ -117,17 +118,16 @@ struct LockScreenView: View {
         }
         .animation(.easeInOut(duration: 0.2), value: error)
         .animation(.easeInOut(duration: 0.2), value: success)
-        .task {
-            if biometricsEnabled {
-                await handleBiometric()
+        .onAppear {
+            if biometricsEnabled && !hasAttemptedBiometric {
+                hasAttemptedBiometric = true
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                    Task {
+                        await handleBiometric()
+                    }
+                }
             }
         }
-    }
-
-    private var biometricTypeForIcon: LABiometryType {
-        let context = LAContext()
-        _ = context.canEvaluatePolicy(.deviceOwnerAuthenticationWithBiometrics, error: nil)
-        return context.biometryType
     }
 
     private func dotColor(for index: Int) -> Color {
@@ -175,14 +175,13 @@ struct LockScreenView: View {
         error = false
     }
 
+    @MainActor
     private func handleBiometric() async {
         let result = await onBiometricAuth()
         if result {
-            await MainActor.run {
-                success = true
-                DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
-                    onUnlock()
-                }
+            success = true
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+                onUnlock()
             }
         }
     }

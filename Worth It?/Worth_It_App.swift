@@ -45,7 +45,7 @@ struct Worth_It_App: App {
                         onUnlock: { lockManager.unlock() },
                         verifyPin: { lockManager.verifyPin($0) },
                         biometricsEnabled: lockManager.settings.biometricsEnabled,
-                        biometricButtonTitle: lockManager.biometricType == .faceID ? "Use Face ID" : "Use Touch ID",
+                        biometricType: lockManager.biometricType,
                         onBiometricAuth: { await lockManager.authenticateWithBiometrics() }
                     )
                     .transition(.opacity)
@@ -53,6 +53,9 @@ struct Worth_It_App: App {
                 }
             }
             .animation(.easeInOut(duration: 0.3), value: lockManager.isLocked)
+            .onAppear {
+                lockManager.checkInitialLock()
+            }
         }
         .modelContainer(sharedModelContainer)
         .onChange(of: scenePhase) { oldPhase, newPhase in

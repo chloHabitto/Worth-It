@@ -18,13 +18,14 @@ final class AppLockManager {
 
     // MARK: - Published State
     var settings: AppLockSettings
-    var isLocked: Bool = false
+    var isLocked: Bool = false  // Start unlocked, will be set on app ready
 
     // MARK: - Private State
     private var lastActivity: Date = Date()
     private var inactivityTimer: Timer?
+    private var hasCheckedInitialLock = false
 
-    // MARK: - Singleton (optional, or use @Environment)
+    // MARK: - Singleton
     static let shared = AppLockManager()
 
     // MARK: - Init
@@ -43,9 +44,29 @@ final class AppLockManager {
             lastActivity = Date(timeIntervalSince1970: stored)
         }
 
-        // Check if should lock on app open
-        if settings.isEnabled && settings.lockTrigger == .onOpen {
-            isLocked = true
+        // DON'T lock here - wait until checkInitialLock() is called
+    }
+
+    // MARK: - Check Initial Lock (call from onAppear)
+    /// Call this once when the app's main view appears
+    func checkInitialLock() {
+        guard !hasCheckedInitialLock else { return }
+        hasCheckedInitialLock = true
+
+        if settings.isEnabled {
+            switch settings.lockTrigger {
+            case .onOpen:
+                isLocked = true
+            case .onBackground:
+                isLocked = false
+            case .afterInactivity:
+                let elapsed = Date().timeIntervalSince(lastActivity) / 60
+                if elapsed >= Double(settings.inactivityTimeout) {
+                    isLocked = true
+                } else {
+                    isLocked = false
+                }
+            }
         }
 
         setupInactivityTimer()
@@ -67,19 +88,21 @@ final class AppLockManager {
     }
 
     // MARK: - Enable Lock
-    // React: enableLock
     func enableLock(pin: String) {
         settings.pinHash = hashPin(pin)
         settings.isEnabled = true
         saveSettings()
+        // Don't lock immediately after enabling - let user continue using app
     }
 
     // MARK: - Disable Lock
-    // React: disableLock
     func disableLock() {
         settings = .default
         isLocked = false
+        hasCheckedInitialLock = false
         saveSettings()
+        inactivityTimer?.invalidate()
+        inactivityTimer = nil
     }
 
     // MARK: - Change PIN
@@ -148,8 +171,9 @@ final class AppLockManager {
 
         switch settings.lockTrigger {
         case .onOpen:
-            // Lock when app becomes inactive (going to background) — handled on next launch
-            break
+            if newPhase == .background {
+                isLocked = true
+            }
         case .onBackground:
             // Lock when coming back from background
             if oldPhase == .background && newPhase == .active {
@@ -202,6 +226,7 @@ final class AppLockManager {
             )
             return success
         } catch {
+            print("Biometric auth error: \(error)")
             return false
         }
     }

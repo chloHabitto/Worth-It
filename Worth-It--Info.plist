@@ -10,5 +10,7 @@
 	<string>Worth It? needs camera access to take your profile photo.</string>
 	<key>NSPhotoLibraryUsageDescription</key>
 	<string>Worth It? needs photo library access to choose your profile photo.</string>
+	<key>NSFaceIDUsageDescription</key>
+	<string>Worth It? uses Face ID to unlock the app and keep your data secure.</string>
 </dict>
 </plist>
