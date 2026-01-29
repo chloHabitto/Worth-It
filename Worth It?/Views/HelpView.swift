@@ -89,12 +89,12 @@ private let faqSections: [FAQSection] = [
 // MARK: - Help View
 
 struct HelpView: View {
+    private var toast: ToastManager { ToastManager.shared }
     @State private var searchQuery: String = ""
     @State private var expandedItems: Set<String> = []
     @State private var selectedHelpTopic: HelpTopic? = nil
     @State private var showContactSheet = false
-    @State private var showCopyConfirmation = false
-    
+
     private static let supportEmail = "support@worthit.app"
     
     private var filteredSections: [FAQSection] {
@@ -161,7 +161,6 @@ struct HelpView: View {
         } message: {
             Text(Self.supportEmail)
         }
-        .overlay(copyConfirmationOverlay)
     }
     
     // MARK: - Search Bar Section
@@ -305,37 +304,7 @@ struct HelpView: View {
     private func copyEmailToClipboard() {
         UIPasteboard.general.string = Self.supportEmail
         UIImpactFeedbackGenerator(style: .medium).impactOccurred()
-        showCopyConfirmation = true
-        DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
-            showCopyConfirmation = false
-        }
-    }
-    
-    @ViewBuilder
-    private var copyConfirmationOverlay: some View {
-        VStack {
-            Spacer()
-            if showCopyConfirmation {
-                Text("Email address copied to clipboard")
-                    .font(.system(size: 14, weight: .medium))
-                    .foregroundStyle(AppColors.foreground)
-                    .padding(.horizontal, 16)
-                    .padding(.vertical, 12)
-                    .background(AppColors.card)
-                    .clipShape(RoundedRectangle(cornerRadius: 12))
-                    .overlay(
-                        RoundedRectangle(cornerRadius: 12)
-                            .stroke(AppColors.border.opacity(0.5), lineWidth: 1)
-                    )
-                    .shadow(color: AppShadows.soft, radius: AppShadows.softRadius, x: 0, y: AppShadows.softY)
-                    .padding(.horizontal, 24)
-                    .padding(.bottom, 100)
-                    .transition(.opacity.combined(with: .scale(scale: 0.95)))
-            }
-        }
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .animation(.easeInOut(duration: 0.2), value: showCopyConfirmation)
-        .allowsHitTesting(false)
+        toast.success("Email copied")
     }
 }
 

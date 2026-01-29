@@ -145,6 +145,7 @@ private struct WorthItButton: View {
 
 struct LogExperienceView: View {
     @Environment(\.dismiss) private var dismiss
+    private var toast: ToastManager { ToastManager.shared }
     let store: EntryStore
 
     @FocusState private var isTextFieldFocused: Bool
@@ -537,6 +538,7 @@ struct LogExperienceView: View {
             note: note.trimmingCharacters(in: .whitespacesAndNewlines)
         )
         store.add(entry)
+        toast.success("Memory logged!")
         dismiss()
     }
 }

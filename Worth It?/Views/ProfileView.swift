@@ -14,6 +14,7 @@ import AVFoundation
 struct ProfileView: View {
     @Environment(\.dismiss) private var dismiss
     @Environment(EntryStore.self) private var store
+    private var toast: ToastManager { ToastManager.shared }
 
     // User preferences - synced via @AppStorage
     @AppStorage("displayName") private var displayName: String = ""
@@ -129,6 +130,7 @@ struct ProfileView: View {
                     withAnimation {
                         profileImageBase64 = ""
                     }
+                    toast.success("Profile photo removed")
                     showPhotoSheet = false
                 }
             )
@@ -141,11 +143,17 @@ struct ProfileView: View {
             Task {
                 if let data = try? await newItem?.loadTransferable(type: Data.self) {
                     await MainActor.run {
+                        let fiveMB = 5 * 1024 * 1024
+                        if data.count > fiveMB {
+                            toast.error("Image too large. Please choose an image under 5MB.")
+                            return
+                        }
                         if let uiImage = UIImage(data: data),
                            let compressed = uiImage.jpegData(compressionQuality: 0.7) {
                             withAnimation {
                                 profileImageBase64 = compressed.base64EncodedString()
                             }
+                            toast.success("Profile photo updated")
                         }
                     }
                 }
@@ -157,6 +165,7 @@ struct ProfileView: View {
                     withAnimation {
                         profileImageBase64 = data.base64EncodedString()
                     }
+                    toast.success("Profile photo updated")
                 }
             }
         }
@@ -473,6 +482,7 @@ struct ProfileView: View {
         let trimmed = tempName.trimmingCharacters(in: .whitespacesAndNewlines)
         if !trimmed.isEmpty {
             displayName = trimmed
+            toast.success("Display name updated")
         }
         isEditingName = false
     }

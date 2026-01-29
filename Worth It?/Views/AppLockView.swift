@@ -11,6 +11,7 @@ import LocalAuthentication
 struct AppLockView: View {
     @Environment(\.dismiss) private var dismiss
     @Environment(AppLockManager.self) private var lockManager
+    private var toast: ToastManager { ToastManager.shared }
 
     @State private var showPinSetup = false
     @State private var showPinChange = false
@@ -66,16 +67,19 @@ struct AppLockView: View {
         .sheet(isPresented: $showPinSetup) {
             PinSetupSheet(mode: .setup) { pin in
                 lockManager.enableLock(pin: pin)
+                toast.success("PIN enabled")
             }
         }
         .sheet(isPresented: $showPinChange) {
             PinSetupSheet(mode: .change, verifyCurrentPin: lockManager.verifyPin) { pin in
                 lockManager.changePin(newPin: pin)
+                toast.success("PIN updated")
             }
         }
         .sheet(isPresented: $showDisableConfirm) {
             PinSetupSheet(mode: .disable, verifyCurrentPin: lockManager.verifyPin) { _ in
                 lockManager.disableLock()
+                toast.success("PIN disabled")
             }
         }
     }

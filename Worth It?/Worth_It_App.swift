@@ -12,6 +12,7 @@ import LocalAuthentication
 @main
 struct Worth_It_App: App {
     @State private var lockManager = AppLockManager.shared
+    @State private var toastManager = ToastManager.shared
     @Environment(\.scenePhase) private var scenePhase
     @AppStorage("appTheme") private var selectedTheme: AppTheme = .system
 
@@ -38,6 +39,8 @@ struct Worth_It_App: App {
             ZStack {
                 ContentView()
                     .environment(lockManager)
+                    .environment(toastManager)
+                    .toastContainer()
                     .preferredColorScheme(selectedTheme.colorScheme)
 
                 if lockManager.settings.isEnabled && lockManager.isLocked {

@@ -18,6 +18,7 @@ struct EntryDetailView: View {
 
     @Environment(\.dismiss) private var dismiss
     @Environment(EntryStore.self) private var store
+    private var toast: ToastManager { ToastManager.shared }
 
     @State private var isEditing = false
     @State private var showMemoSheet = false
@@ -146,6 +147,7 @@ struct EntryDetailView: View {
             Button("Cancel", role: .cancel) {}
             Button("Delete", role: .destructive) {
                 onDelete()
+                toast.success("Memory deleted")
                 dismiss()
             }
         } message: {
@@ -154,11 +156,13 @@ struct EntryDetailView: View {
         .sheet(isPresented: $showMemoSheet) {
             AddMemoSheetView(actionName: entry.action) { outcome, feeling, note in
                 store.addMemo(to: entry, outcome: outcome, feeling: feeling, note: note)
+                toast.success("Memo added!")
             }
         }
         .sheet(item: $editingMemo) { item in
             EditMemoSheetView(memo: item.memo) { outcome, feeling, note in
                 store.updateMemo(item.memo, outcome: outcome, feeling: feeling, note: note)
+                toast.success("Memo updated!")
             }
         }
     }
@@ -322,9 +326,18 @@ struct EntryDetailView: View {
                         MemoCardView(
                             memo: memo,
                             onEdit: { editingMemo = MemoSheetItem(memo: memo) },
-                            onDelete: { store.deleteMemo(memo) },
-                            onToggleStar: { store.toggleMemoStar(memo) },
-                            onToggleHide: { store.toggleMemoHidden(memo) }
+                            onDelete: {
+                                store.deleteMemo(memo)
+                                toast.success("Memo deleted")
+                            },
+                            onToggleStar: {
+                                store.toggleMemoStar(memo)
+                                toast.success(memo.isStarred ? "Starred!" : "Unstarred")
+                            },
+                            onToggleHide: {
+                                store.toggleMemoHidden(memo)
+                                toast.success(memo.isHidden ? "Memo hidden" : "Memo visible")
+                            }
                         )
                     }
                 }
@@ -573,6 +586,7 @@ struct EntryDetailView: View {
         )
 
         onUpdate?(updatedEntry)
+        toast.success("Memory updated")
         withAnimation(.easeInOut(duration: 0.25)) { isEditing = false }
     }
 

@@ -44,12 +44,12 @@ enum AppTheme: String, CaseIterable {
 struct AccountView: View {
     @Environment(EntryStore.self) private var store
     @Environment(AppLockManager.self) private var lockManager
+    private var toast: ToastManager { ToastManager.shared }
     @AppStorage("appTheme") private var selectedTheme: AppTheme = .system
     @AppStorage("displayName") private var displayName: String = ""
     @AppStorage("profileImageData") private var profileImageBase64: String = ""
     @State private var showClearDataAlert = false
     @State private var showContactSheet = false
-    @State private var showCopyConfirmation = false
 
     private static let supportEmail = "support@worthit.app"
 
@@ -117,7 +117,6 @@ struct AccountView: View {
         } message: {
             Text(Self.supportEmail)
         }
-        .overlay(copyConfirmationOverlay)
     }
 
     // MARK: - Header
@@ -386,6 +385,7 @@ struct AccountView: View {
     private func handleClearData() {
         let allIds = Set(store.entries.map { $0.id })
         store.delete(ids: allIds)
+        toast.success("All memories cleared")
     }
 
     private func exportEntries(_ entries: [Entry]) -> Data? {
@@ -427,6 +427,7 @@ struct AccountView: View {
         if let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
            let rootVC = windowScene.windows.first?.rootViewController {
             rootVC.present(activityVC, animated: true)
+            toast.success("Data exported successfully")
         }
     }
 
@@ -461,37 +462,7 @@ struct AccountView: View {
     private func copyEmailToClipboard() {
         UIPasteboard.general.string = Self.supportEmail
         UIImpactFeedbackGenerator(style: .medium).impactOccurred()
-        showCopyConfirmation = true
-        DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
-            showCopyConfirmation = false
-        }
-    }
-
-    @ViewBuilder
-    private var copyConfirmationOverlay: some View {
-        VStack {
-            Spacer()
-            if showCopyConfirmation {
-                Text("Email address copied to clipboard")
-                    .font(.system(size: 14, weight: .medium))
-                    .foregroundStyle(AppColors.foreground)
-                    .padding(.horizontal, 16)
-                    .padding(.vertical, 12)
-                    .background(AppColors.card)
-                    .clipShape(RoundedRectangle(cornerRadius: 12))
-                    .overlay(
-                        RoundedRectangle(cornerRadius: 12)
-                            .stroke(AppColors.border.opacity(0.5), lineWidth: 1)
-                    )
-                    .shadow(color: AppShadows.soft, radius: AppShadows.softRadius, x: 0, y: AppShadows.softY)
-                    .padding(.horizontal, 24)
-                    .padding(.bottom, 100)
-                    .transition(.opacity.combined(with: .scale(scale: 0.95)))
-            }
-        }
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .animation(.easeInOut(duration: 0.2), value: showCopyConfirmation)
-        .allowsHitTesting(false)
+        toast.success("Email copied")
     }
 }
 

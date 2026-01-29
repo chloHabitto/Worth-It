@@ -40,6 +40,10 @@ struct AddMemoSheetView: View {
                 .padding(.bottom, 16)
             }
             .scrollIndicators(.hidden)
+
+            navigationButtons
+                .padding(.horizontal, 24)
+                .padding(.bottom, 24)
         }
         .background(AppColors.background.ignoresSafeArea())
         .presentationDetents([.fraction(0.75)])
@@ -68,9 +72,9 @@ struct AddMemoSheetView: View {
 
                 HStack(spacing: 6) {
                     ForEach(1...3, id: \.self) { i in
-                        Circle()
+                        RoundedRectangle(cornerRadius: 3)
                             .fill(i <= step.rawValue ? AppColors.primary : AppColors.muted)
-                            .frame(width: 8, height: 8)
+                            .frame(width: 32, height: 6)
                     }
                 }
 
@@ -103,74 +107,79 @@ struct AddMemoSheetView: View {
 
     private var canProceed: Bool {
         switch step {
-        case .outcome:
-            return outcome != nil
-        case .feeling:
-            return feeling != nil
-        case .note:
-            return outcome != nil && feeling != nil
+        case .outcome: return outcome != nil
+        case .feeling: return feeling != nil
+        case .note: return true
         }
     }
 
     // MARK: - Navigation Buttons
 
+    @ViewBuilder
     private var navigationButtons: some View {
-        HStack(spacing: 12) {
-            if step != .outcome {
+        VStack(spacing: 16) {
+            HStack(spacing: 12) {
+                if step != .outcome {
+                    Button {
+                        withAnimation(.easeInOut(duration: 0.25)) {
+                            switch step {
+                            case .feeling: step = .outcome
+                            case .note: step = .feeling
+                            default: break
+                            }
+                        }
+                    } label: {
+                        Text("Back")
+                            .font(.system(size: 16, weight: .medium))
+                            .foregroundStyle(AppColors.foreground)
+                            .frame(maxWidth: .infinity)
+                            .padding(.vertical, 16)
+                            .background(AppColors.muted)
+                            .clipShape(RoundedRectangle(cornerRadius: 12))
+                    }
+                    .buttonStyle(.plain)
+                }
+
                 Button {
                     withAnimation(.easeInOut(duration: 0.25)) {
-                        if step == .feeling {
-                            step = .outcome
-                        } else if step == .note {
-                            step = .feeling
+                        switch step {
+                        case .outcome: step = .feeling
+                        case .feeling: step = .note
+                        case .note:
+                            let finalOutcome = outcome ?? .other
+                            let finalFeeling = feeling ?? .meh
+                            onAdd(finalOutcome, finalFeeling, note.trimmingCharacters(in: .whitespacesAndNewlines))
+                            dismiss()
                         }
                     }
                 } label: {
-                    HStack(spacing: 6) {
-                        Image(systemName: "chevron.left")
-                            .font(.system(size: 14, weight: .medium))
-                        Text("Back")
-                            .font(.system(size: 16, weight: .medium))
-                    }
-                    .foregroundStyle(AppColors.foreground)
-                    .frame(maxWidth: .infinity)
-                    .padding(.vertical, 14)
-                    .background(AppColors.card)
-                    .clipShape(RoundedRectangle(cornerRadius: 12))
-                    .overlay(
-                        RoundedRectangle(cornerRadius: 12)
-                            .stroke(AppColors.border, lineWidth: 1)
-                    )
+                    Text(step == .note ? "Save" : "Next")
+                        .font(.system(size: 16, weight: .medium))
+                        .foregroundStyle(canProceed ? AppColors.primaryForeground : AppColors.mutedForeground)
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, 16)
+                        .background(canProceed ? AppColors.primary : AppColors.muted)
+                        .clipShape(RoundedRectangle(cornerRadius: 12))
                 }
                 .buttonStyle(.plain)
+                .disabled(!canProceed)
             }
 
-            Button {
-                if step == .note {
-                    if let outcome = outcome, let feeling = feeling {
-                        onAdd(outcome, feeling, note.trimmingCharacters(in: .whitespacesAndNewlines))
-                        dismiss()
-                    }
-                } else {
+            if step == .outcome {
+                Button {
                     withAnimation(.easeInOut(duration: 0.25)) {
-                        if step == .outcome {
-                            step = .feeling
-                        } else if step == .feeling {
-                            step = .note
-                        }
+                        step = .note
                     }
+                } label: {
+                    HStack(spacing: 4) {
+                        Text("Skip to note")
+                            .font(.system(size: 16))
+                        Image(systemName: "arrow.right")
+                            .font(.system(size: 14))
+                    }
+                    .foregroundStyle(AppColors.mutedForeground)
                 }
-            } label: {
-                Text(step == .note ? "Save" : "Next")
-                    .font(.system(size: 16, weight: .medium))
-                    .foregroundStyle(canProceed ? AppColors.primaryForeground : AppColors.mutedForeground)
-                    .frame(maxWidth: .infinity)
-                    .padding(.vertical, 14)
-                    .background(canProceed ? AppColors.primary : AppColors.muted)
-                    .clipShape(RoundedRectangle(cornerRadius: 12))
             }
-            .buttonStyle(.plain)
-            .disabled(!canProceed)
         }
     }
 
@@ -191,60 +200,39 @@ struct AddMemoSheetView: View {
     // MARK: - Outcome Step
 
     private var outcomeStep: some View {
-        VStack(spacing: 16) {
-            VStack(spacing: 12) {
-                ForEach(MemoOutcome.allCases, id: \.self) { opt in
-                    Button {
-                        withAnimation(.easeInOut(duration: 0.15)) {
-                            outcome = opt
-                        }
-                    } label: {
-                        HStack(spacing: 16) {
-                            Text(opt.emoji)
-                                .font(.system(size: 28))
-
-                            Text(opt.label)
-                                .font(.system(size: 16, weight: .medium))
-                                .foregroundStyle(outcome == opt ? AppColors.primaryForeground : AppColors.foreground)
-
-                            Spacer()
-
-                            if outcome == opt {
-                                Image(systemName: "checkmark")
-                                    .font(.system(size: 14, weight: .semibold))
-                                    .foregroundStyle(AppColors.primaryForeground)
-                            }
-                        }
-                        .padding(16)
-                        .background(outcome == opt ? AppColors.primary : AppColors.card)
-                        .clipShape(RoundedRectangle(cornerRadius: 12))
-                        .overlay(
-                            RoundedRectangle(cornerRadius: 12)
-                                .stroke(outcome == opt ? AppColors.primary : AppColors.border, lineWidth: 1)
-                        )
+        VStack(spacing: 12) {
+            ForEach(MemoOutcome.allCases, id: \.self) { opt in
+                Button {
+                    withAnimation(.easeInOut(duration: 0.15)) {
+                        outcome = opt
                     }
-                    .buttonStyle(.plain)
-                }
-            }
+                } label: {
+                    HStack(spacing: 16) {
+                        Text(opt.emoji)
+                            .font(.system(size: 28))
 
-            Button {
-                outcome = .other
-                feeling = .meh
-                withAnimation(.easeInOut(duration: 0.25)) {
-                    step = .note
-                }
-            } label: {
-                HStack(spacing: 4) {
-                    Text("Skip to note")
-                        .font(.system(size: 14))
-                    Image(systemName: "chevron.right")
-                        .font(.system(size: 12, weight: .medium))
-                }
-                .foregroundStyle(AppColors.mutedForeground)
-            }
-            .padding(.top, 4)
+                        Text(opt.label)
+                            .font(.system(size: 16, weight: .medium))
+                            .foregroundStyle(outcome == opt ? AppColors.primaryForeground : AppColors.foreground)
 
-            navigationButtons
+                        Spacer()
+
+                        if outcome == opt {
+                            Image(systemName: "checkmark")
+                                .font(.system(size: 14, weight: .semibold))
+                                .foregroundStyle(AppColors.primaryForeground)
+                        }
+                    }
+                    .padding(16)
+                    .background(outcome == opt ? AppColors.primary : AppColors.card)
+                    .clipShape(RoundedRectangle(cornerRadius: 12))
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 12)
+                            .stroke(outcome == opt ? AppColors.primary : AppColors.border, lineWidth: 1)
+                    )
+                }
+                .buttonStyle(.plain)
+            }
         }
         .transition(.asymmetric(
             insertion: .move(edge: .trailing).combined(with: .opacity),
@@ -282,8 +270,6 @@ struct AddMemoSheetView: View {
                     .buttonStyle(.plain)
                 }
             }
-
-            navigationButtons
         }
         .transition(.asymmetric(
             insertion: .move(edge: .trailing).combined(with: .opacity),
@@ -339,8 +325,6 @@ struct AddMemoSheetView: View {
                     .inputFocusStyle(isFocused: isNoteFocused, cornerRadius: 12)
                     .focused($isNoteFocused)
             }
-
-            navigationButtons
         }
         .transition(.asymmetric(
             insertion: .move(edge: .trailing).combined(with: .opacity),
