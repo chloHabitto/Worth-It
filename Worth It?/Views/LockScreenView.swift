@@ -20,6 +20,7 @@ struct LockScreenView: View {
     @State private var success: Bool = false
     @State private var shakeOffset: CGFloat = 0
     @State private var hasAttemptedBiometric: Bool = false
+    @State private var showHelpAlert: Bool = false
 
     private let pinLength = 4
 
@@ -115,6 +116,22 @@ struct LockScreenView: View {
                 Spacer()
             }
             .padding(.horizontal, 24)
+        }
+        .overlay(alignment: .topTrailing) {
+            Button {
+                showHelpAlert = true
+            } label: {
+                Text("Need help?")
+                    .font(.system(size: 13))
+                    .foregroundStyle(AppColors.mutedForeground)
+            }
+            .padding(.top, 16)
+            .padding(.trailing, 24)
+        }
+        .alert("Forgot your PIN?", isPresented: $showHelpAlert) {
+            Button("OK", role: .cancel) {}
+        } message: {
+            Text("If you've forgotten your PIN, you'll need to delete and reinstall the app. Don't worry - your data is safely stored in iCloud. Once you reinstall and sign in with the same iCloud account, all your entries will sync back automatically.")
         }
         .animation(.easeInOut(duration: 0.2), value: error)
         .animation(.easeInOut(duration: 0.2), value: success)
