@@ -13,6 +13,7 @@ import LocalAuthentication
 struct Worth_It_App: App {
     @State private var lockManager = AppLockManager.shared
     @State private var toastManager = ToastManager.shared
+    @State private var showSplash = true
     @Environment(\.scenePhase) private var scenePhase
     @AppStorage("appTheme") private var selectedTheme: AppTheme = .system
 
@@ -43,6 +44,12 @@ struct Worth_It_App: App {
                     .toastContainer()
                     .preferredColorScheme(selectedTheme.colorScheme)
 
+                if showSplash {
+                    SplashScreenView()
+                        .transition(.opacity)
+                        .zIndex(200)
+                }
+
                 if lockManager.settings.isEnabled && lockManager.isLocked {
                     LockScreenView(
                         onUnlock: { lockManager.unlock() },
@@ -56,8 +63,13 @@ struct Worth_It_App: App {
                 }
             }
             .animation(.easeInOut(duration: 0.3), value: lockManager.isLocked)
+            .animation(.easeOut(duration: 0.4), value: showSplash)
             .onAppear {
                 lockManager.checkInitialLock()
+                Task {
+                    try? await Task.sleep(for: .seconds(2))
+                    showSplash = false
+                }
             }
         }
         .modelContainer(sharedModelContainer)
