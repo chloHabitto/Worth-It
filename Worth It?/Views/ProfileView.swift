@@ -151,7 +151,7 @@ struct ProfileView: View {
             }
         }
         .fullScreenCover(isPresented: $showCamera) {
-            CameraPickerView { image in
+            CameraFullScreenWrapper { image in
                 if let data = image.jpegData(compressionQuality: 0.7) {
                     withAnimation {
                         profileImageBase64 = data.base64EncodedString()
@@ -604,16 +604,47 @@ struct PhotoOptionButton: View {
     }
 }
 
-// MARK: - Camera Picker (UIKit wrapper)
+// MARK: - Camera Full Screen Wrapper
+// Ensures camera truly fills the entire screen
 
-struct CameraPickerView: UIViewControllerRepresentable {
+struct CameraFullScreenWrapper: View {
     let onImageCaptured: (UIImage) -> Void
     @Environment(\.dismiss) private var dismiss
+
+    var body: some View {
+        ZStack {
+            Color.black
+                .ignoresSafeArea(.all)
+
+            CameraPickerViewControllerWrapper(
+                onImageCaptured: { image in
+                    onImageCaptured(image)
+                    dismiss()
+                },
+                onCancel: {
+                    dismiss()
+                }
+            )
+            .ignoresSafeArea(.all)
+        }
+        .statusBarHidden(true)
+    }
+}
+
+struct CameraPickerViewControllerWrapper: UIViewControllerRepresentable {
+    let onImageCaptured: (UIImage) -> Void
+    let onCancel: () -> Void
 
     func makeUIViewController(context: Context) -> UIImagePickerController {
         let picker = UIImagePickerController()
         picker.sourceType = .camera
         picker.delegate = context.coordinator
+        picker.allowsEditing = false
+
+        picker.modalPresentationStyle = .overFullScreen
+        picker.cameraDevice = .rear
+        picker.cameraCaptureMode = .photo
+
         return picker
     }
 
@@ -624,9 +655,9 @@ struct CameraPickerView: UIViewControllerRepresentable {
     }
 
     class Coordinator: NSObject, UIImagePickerControllerDelegate, UINavigationControllerDelegate {
-        let parent: CameraPickerView
+        let parent: CameraPickerViewControllerWrapper
 
-        init(_ parent: CameraPickerView) {
+        init(_ parent: CameraPickerViewControllerWrapper) {
             self.parent = parent
         }
 
@@ -634,11 +665,10 @@ struct CameraPickerView: UIViewControllerRepresentable {
             if let image = info[.originalImage] as? UIImage {
                 parent.onImageCaptured(image)
             }
-            parent.dismiss()
         }
 
         func imagePickerControllerDidCancel(_ picker: UIImagePickerController) {
-            parent.dismiss()
+            parent.onCancel()
         }
     }
 }
