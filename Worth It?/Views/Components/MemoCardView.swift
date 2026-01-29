@@ -15,80 +15,100 @@ struct MemoCardView: View {
     @State private var showDeleteAlert = false
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 12) {
-            // Header row
-            HStack {
-                // Outcome badge
-                HStack(spacing: 6) {
+        HStack(alignment: .top, spacing: 12) {
+            // Star indicator (left side, only if starred)
+            if memo.isStarred {
+                Image(systemName: "star.fill")
+                    .font(.system(size: 14))
+                    .foregroundStyle(Color.yellow)
+                    .padding(.top, 2)
+            }
+
+            // Main content
+            VStack(alignment: .leading, spacing: 8) {
+                // Top row: outcome, feeling, hidden badge, time, menu
+                HStack(alignment: .center, spacing: 8) {
+                    // Outcome emoji and label
                     Text(memo.outcome.emoji)
-                        .font(.system(size: 16))
+                        .font(.system(size: 18))
                     Text(memo.outcome.label)
                         .font(.system(size: 14, weight: .medium))
-                }
-                .foregroundStyle(memo.outcome == .resisted ? AppColors.secondary : AppColors.foreground)
+                        .foregroundStyle(AppColors.foreground)
 
-                Spacer()
-
-                // Feeling indicator
-                HStack(spacing: 4) {
+                    // Feeling emoji
                     Text(memo.feeling.emoji)
-                        .font(.system(size: 16))
-                    Text(memo.feeling.displayName)
+                        .font(.system(size: 18))
+
+                    // Hidden badge
+                    if memo.isHidden {
+                        Text("Hidden")
+                            .font(.system(size: 11))
+                            .foregroundStyle(AppColors.mutedForeground)
+                            .padding(.horizontal, 8)
+                            .padding(.vertical, 2)
+                            .background(AppColors.muted)
+                            .clipShape(RoundedRectangle(cornerRadius: 4))
+                    }
+
+                    Spacer()
+
+                    // Time (without seconds)
+                    Text(memo.createdAt.timeAgoShort())
                         .font(.system(size: 12))
                         .foregroundStyle(AppColors.mutedForeground)
                 }
 
-                // Menu
-                Menu {
-                    Button {
-                        onEdit()
-                    } label: {
-                        Label("Edit", systemImage: "pencil")
-                    }
-
-                    Button {
-                        onToggleStar()
-                    } label: {
-                        Label(memo.isStarred ? "Unstar" : "Star",
-                              systemImage: memo.isStarred ? "star.slash" : "star")
-                    }
-
-                    Button {
-                        onToggleHide()
-                    } label: {
-                        Label(memo.isHidden ? "Show" : "Hide",
-                              systemImage: memo.isHidden ? "eye" : "eye.slash")
-                    }
-
-                    Divider()
-
-                    Button(role: .destructive) {
-                        showDeleteAlert = true
-                    } label: {
-                        Label("Delete", systemImage: "trash")
-                    }
-                } label: {
-                    Image(systemName: "ellipsis")
+                // Note (if exists)
+                if !memo.note.isEmpty {
+                    Text("\"\(memo.note)\"")
                         .font(.system(size: 14))
+                        .italic()
                         .foregroundStyle(AppColors.mutedForeground)
-                        .frame(width: 32, height: 32)
-                        .contentShape(Rectangle())
+                        .fixedSize(horizontal: false, vertical: true)
                 }
             }
+            .frame(maxWidth: .infinity, alignment: .leading)
 
-            // Note
-            if !memo.note.isEmpty {
-                Text("\"\(memo.note)\"")
+            // Menu button (right side)
+            Menu {
+                Button {
+                    onToggleStar()
+                } label: {
+                    Label(
+                        memo.isStarred ? "Unstar" : "Star as important",
+                        systemImage: memo.isStarred ? "star.slash" : "star"
+                    )
+                }
+
+                Button {
+                    onEdit()
+                } label: {
+                    Label("Edit", systemImage: "pencil")
+                }
+
+                Button {
+                    onToggleHide()
+                } label: {
+                    Label(
+                        memo.isHidden ? "Show" : "Hide",
+                        systemImage: memo.isHidden ? "eye" : "eye.slash"
+                    )
+                }
+
+                Divider()
+
+                Button(role: .destructive) {
+                    showDeleteAlert = true
+                } label: {
+                    Label("Delete", systemImage: "trash")
+                }
+            } label: {
+                Image(systemName: "ellipsis")
                     .font(.system(size: 14))
-                    .italic()
-                    .foregroundStyle(AppColors.foreground)
-                    .fixedSize(horizontal: false, vertical: true)
+                    .foregroundStyle(AppColors.mutedForeground)
+                    .frame(width: 32, height: 32)
+                    .contentShape(Rectangle())
             }
-
-            // Timestamp
-            Text(memo.createdAt, style: .relative)
-                .font(.system(size: 12))
-                .foregroundStyle(AppColors.mutedForeground)
         }
         .padding(16)
         .background(memo.isStarred ? Color.yellow.opacity(0.05) : AppColors.card)
@@ -97,6 +117,7 @@ struct MemoCardView: View {
             RoundedRectangle(cornerRadius: 12)
                 .stroke(memo.isStarred ? Color.yellow.opacity(0.3) : AppColors.border.opacity(0.5), lineWidth: 1)
         )
+        .shadow(color: AppShadows.soft, radius: AppShadows.softRadius, x: 0, y: AppShadows.softY)
         .opacity(memo.isHidden ? 0.5 : 1)
         .alert("Delete this memo?", isPresented: $showDeleteAlert) {
             Button("Cancel", role: .cancel) {}
@@ -123,6 +144,14 @@ struct MemoCardView: View {
 
         MemoCardView(
             memo: Memo(outcome: .didAgain, feeling: .bad, note: "Regret it again...", isStarred: true),
+            onEdit: {},
+            onDelete: {},
+            onToggleStar: {},
+            onToggleHide: {}
+        )
+
+        MemoCardView(
+            memo: Memo(outcome: .reflecting, feeling: .meh, note: "", isHidden: true),
             onEdit: {},
             onDelete: {},
             onToggleStar: {},

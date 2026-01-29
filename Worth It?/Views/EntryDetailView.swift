@@ -23,7 +23,6 @@ struct EntryDetailView: View {
     @State private var showMemoSheet = false
     @State private var editingMemo: MemoSheetItem? = nil
     @State private var showHiddenMemos = false
-    @State private var showDeleteConfirm = false
     @State private var showDiscardAlert = false
 
     // Edit state
@@ -135,15 +134,6 @@ struct EntryDetailView: View {
         } message: {
             Text("You have unsaved changes that will be lost.")
         }
-        .alert("Delete this memory?", isPresented: $showDeleteConfirm) {
-            Button("Cancel", role: .cancel) {}
-            Button("Delete", role: .destructive) {
-                onDelete()
-                dismiss()
-            }
-        } message: {
-            Text("This cannot be undone.")
-        }
         .sheet(isPresented: $showMemoSheet) {
             AddMemoSheetView(actionName: entry.action) { outcome, feeling, note in
                 store.addMemo(to: entry, outcome: outcome, feeling: feeling, note: note)
@@ -162,7 +152,6 @@ struct EntryDetailView: View {
         VStack(alignment: .leading, spacing: sectionSpacing) {
             consolidatedHeroCard
             timelineSection
-            deleteButton
         }
     }
 
@@ -217,16 +206,20 @@ struct EntryDetailView: View {
                 }
 
                 if !entry.emotionalTags.isEmpty {
-                    FlowLayout(spacing: 8) {
-                        ForEach(entry.emotionalTags, id: \.self) { tag in
-                            Text(tag)
-                                .font(.system(size: 14))
-                                .foregroundStyle(AppColors.mutedForeground)
-                                .padding(.horizontal, 12)
-                                .padding(.vertical, 6)
-                                .background(AppColors.muted)
-                                .clipShape(Capsule())
+                    HStack {
+                        Spacer(minLength: 0)
+                        FlowLayout(spacing: 8) {
+                            ForEach(entry.emotionalTags, id: \.self) { tag in
+                                Text(tag)
+                                    .font(.system(size: 14))
+                                    .foregroundStyle(AppColors.mutedForeground)
+                                    .padding(.horizontal, 12)
+                                    .padding(.vertical, 6)
+                                    .background(AppColors.muted)
+                                    .clipShape(Capsule())
+                            }
                         }
+                        Spacer(minLength: 0)
                     }
                 }
             }
@@ -318,25 +311,6 @@ struct EntryDetailView: View {
                         )
                     }
                 }
-            } else {
-                // Empty state
-                VStack(spacing: 8) {
-                    Text("No memos yet")
-                        .font(.system(size: 14, weight: .medium))
-                        .foregroundStyle(AppColors.foreground)
-                    Text("Track what happens next time you face this decision.")
-                        .font(.system(size: 14))
-                        .foregroundStyle(AppColors.mutedForeground)
-                        .multilineTextAlignment(.center)
-                }
-                .padding(.vertical, 24)
-                .frame(maxWidth: .infinity)
-                .background(AppColors.card)
-                .clipShape(RoundedRectangle(cornerRadius: 12))
-                .overlay(
-                    RoundedRectangle(cornerRadius: 12)
-                        .stroke(AppColors.border.opacity(0.5), lineWidth: 1)
-                )
             }
         }
     }
@@ -345,21 +319,6 @@ struct EntryDetailView: View {
         (entry.memos ?? [])
             .filter { showHiddenMemos || !$0.isHidden }
             .sorted { $0.createdAt > $1.createdAt }
-    }
-
-    private var deleteButton: some View {
-        Button(role: .destructive) {
-            showDeleteConfirm = true
-        } label: {
-            HStack(spacing: 8) {
-                Image(systemName: "trash")
-                    .font(.system(size: 14))
-                Text("Delete this memory")
-                    .font(.system(size: 14))
-            }
-            .foregroundStyle(AppColors.destructive)
-        }
-        .padding(.top, 16)
     }
 
     // MARK: - Edit Mode Content
